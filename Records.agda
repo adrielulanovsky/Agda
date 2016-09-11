@@ -396,7 +396,7 @@ module productIso (A B C : Set) where
 
 {- Ejercicio: construir isomorfismos entre Vec A n × Vec B n y
 Vec (A × B) n para todos A, B habitantes de Set y n natural -}
-{-
+
 module IsoVec (A B : Set) where
 
  open import Data.Vec
@@ -410,11 +410,6 @@ module IsoVec (A B : Set) where
  vec-inv : {n : ℕ} -> Vec (A × B) n -> Vec A n × Vec B n
  vec-inv {zero} x = [] , []
  vec-inv {suc n} ((x , y) ∷ xs) = (x ∷ proy1 (vec-inv xs)) , (y ∷ proy2 (vec-inv xs))
--- (x ∷ proy1 (vec-inv xs)) , (y ∷ proy2 (vec-inv xs)))
--- vec-inv x = (map proy1 x , map proy2 x)
-
- vec-aux : {n : ℕ} -> (b : Vec (A × B) n) -> vec-fun ((map proy1 b) , (map proy2 b)) ≅ vec-fun (vec-inv b)
- vec-aux = {!!}
 
  proy-is-cart2 : (x : A × B) -> (proy1 x , proy2 x) ≅ x
  proy-is-cart2 (x1 , x2) = refl
@@ -429,18 +424,24 @@ module IsoVec (A B : Set) where
     (a , b) ∷ xs
   ∎ 
 
+ vec-law2 : {n : ℕ} -> (a : Vec A n × Vec B n) → vec-inv (vec-fun a) ≅ a
+ vec-law2 {zero} ([] , []) = refl
+ vec-law2 {suc n} ((x ∷ xs) , (y ∷ ys)) = 
+        proof
+         ((x ∷ proy1 (vec-inv (vec-fun (xs , ys)))) ,
+           (y ∷ proy2 (vec-inv (vec-fun (xs , ys)))))
+        ≅⟨ cong₂ _,_ (cong (_∷_ x) (cong proy1 (vec-law2 (xs , ys)))) ((cong (_∷_ y) (cong proy2 (vec-law2 (xs , ys))))) ⟩
+        ((x ∷ proy1 (xs , ys)) ,
+           (y ∷ proy2 (xs , ys)))
+        ≅⟨ refl ⟩
+        ((x ∷ xs) , (y ∷ ys))
+        ∎
 
  iso-vec : {n : ℕ} -> Iso (Vec A n × Vec B n) (Vec (A × B) n)
  iso-vec = record {
           fun = vec-fun
         ; inv = vec-inv
         ; law1 = vec-law1
-        ; law2 = {!!} }
- {-proof
-                 ?
-                 ≅⟨ {!!} ⟩
-                 {!!}
-                 ∎
--}
+        ; law2 = vec-law2 }
 
--}
+

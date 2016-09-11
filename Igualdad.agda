@@ -416,7 +416,6 @@ open import Data.Nat hiding (_⊔_)
 -- Monoide de Naturales y suma
 
 module NatMonoid where
-
   NatMonoid : Monoid
   NatMonoid = record
                 { Carrier = ℕ
@@ -424,9 +423,8 @@ module NatMonoid where
                 ; ε = 0
                 ; lid = refl
                 ; rid = λ{x} → ≡→≅ (Propositional.+0 x)
-                ; assoc = {!+-assoc!} } 
-
-
+                ; assoc = λ {x}{y}{z} -> ≡→≅ (Propositional.+-assoc x y z) } 
+  
 
 
 
