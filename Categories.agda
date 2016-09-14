@@ -41,13 +41,6 @@ Sets = record
          ; ass = refl
          }
 
-
-
-
-
-
-
-
 --------------------------------------------------
 {- Para cada categoría existe la categoría dual, que consiste de los
 mismos objetos, pero con las flechas invertidas. -}
@@ -63,16 +56,6 @@ C Op = let open Cat C in
          ; idr = idl
          ; ass = sym ass
          }
-
-
-
-
-
-
-
-
-
-
 
 --------------------------------------------------
 {- Categoría Discreta
@@ -93,27 +76,27 @@ module Discrete (A : Set) where
     constructor _&_
     field
       fun : (conj X) -> (conj X)
-      prop :  {x : conj X} -> fun ≅ id {A = conj X}
+      prop :  fun ≅ id {A = conj X}
       
   open Discrete₁
 
   _**_ : {X Y Z : Discrete₀} →
       Discrete₁ Y Z → Discrete₁ X Y → Discrete₁ X Z
   x ** x₁ = id & refl
-{-  
+  
   Discrete-eq : {X Y : Discrete₀} → {f g : Discrete₁ X Y}
                    → f ≅ g
-  Discrete-eq {f = f & p} {g & q} = cong₂ _&_ (trans p (sym q)) {!iir p q!}
-  -}
+  Discrete-eq {f = _ & refl} {_ & refl} = refl
+
   Discrete : Cat
   Discrete = record
                { Obj = Discrete₀
                ; Hom = Discrete₁
                ; iden = id & refl
                ; _∙_ = _**_
-               ; idl = {!!}
-               ; idr = {!!}
-               ; ass = {!!}
+               ; idl = Discrete-eq
+               ; idr = Discrete-eq
+               ; ass = Discrete-eq
                }
 
 
@@ -125,18 +108,32 @@ module Discrete (A : Set) where
 {- A menudo nos queremos "olvidar" de los morfismos de una
 categoría. Es decir, miramos a la categoría como una categoría
 discreta. Esto se nota en lenguaje categórico como |C| -}
+module barraCat where
+  open Cat
+  record barraCat₁ {C : Cat}(X Y : Obj C) : Set where
+    constructor _&_
+    field
+      mor : Hom C X X
+      prop :  mor ≅ iden C {X}
 
-∣_∣ : Cat → Cat
-∣ C ∣ = record
+  open barraCat₁
+
+  barraCat-eq : {C : Cat}{X Y : Obj C} → {f g : barraCat₁ {C} X Y}
+                   → f ≅ g
+  barraCat-eq {f = _ & refl} {_ & refl} = refl
+
+
+  ∣_∣ : Cat -> Cat
+  ∣ C ∣ = record
           { Obj = Obj C
-          ; Hom = {!!}
-          ; iden = {!!}
-          ; _∙_ = {!!}
-          ; idl = {!!}
-          ; idr = {!!}
-          ; ass = {!!}
+          ; Hom = barraCat₁ {C}
+          ; iden = iden C & refl
+          ; _∙_ = λ f g → (mor g) & (prop g)
+          ; idl = barraCat-eq
+          ; idr = barraCat-eq
+          ; ass = barraCat-eq
           }
-      where open Cat
+
 --------------------------------------------------
 {- Categoría Producto -}
 {- Dadas dos categorías, podemos formar la categoría producto 
@@ -447,6 +444,7 @@ record Iso {C : Cat}(A B : Obj C)(fun : Hom C A B) : Set where
             law1 : _∙_ C fun inv  ≅ iden C {B}
             law2 : _∙_ C inv fun  ≅ iden C {A}
 
+
 --------------------------------------------------
 
 {- Ejercicio
@@ -458,12 +456,45 @@ Ayuda : puede ser útil usar cong-app
 Biyectiva : {X Y : Set}(f : X → Y) → Set
 Biyectiva {X} {Y} f = (y : Y) → Σ X (λ x → (f x ≅ y) × (∀ x' → f x' ≅ y → x ≅ x')) 
 
---inversa : 
+inversa : {X Y : Set}(f : X → Y) -> Biyectiva f -> Y -> X
+inversa f p y with p y
+inversa f p y | x , q , r = x
+
+iso-inversa-1 : {X Y : Set}{f : X → Y}{p : Biyectiva f}{y : Y} -> f ((inversa f p) y) ≅ y
+iso-inversa-1 {p = p}{y} with p y
+iso-inversa-1 | x , p1 , p2 = p1
+
+iso-inversa-2 : {X Y : Set}{f : X → Y}{p : Biyectiva f}{x : X} -> (inversa f p) (f x) ≅ x
+iso-inversa-2 {f = f}{p}{x} with p (f x)
+iso-inversa-2 {f = f}{p}{x} | x' , p1 , p2 = p2 x refl
 
 
 iso-is-biyec : {A B : Set}-> {f : A -> B} -> Biyectiva f -> Iso {Sets} A B f
-iso-is-biyec {f = f} p = iso (λ x → Σ.proj₁ (p {!!})) {!!} {!!}
+iso-is-biyec {f = f} p = iso (inversa f p) (ext (λ y → iso-inversa-1 {f = f}{p}{y})) (ext (λ x → iso-inversa-2 {p = p}{x}))
 
+biyec-is-iso : {A B : Set}-> {f : A -> B} -> Iso {Sets} A B f -> Biyectiva f 
+biyec-is-iso {f = f} (iso inv law1 law2) y = (inv y) , ((cong-app law1 y) , (λ x p → 
+                               proof
+                               inv y
+                               ≅⟨ cong inv (sym p) ⟩
+                               inv (f x)
+                               ≅⟨ cong-app law2 x ⟩
+                               x
+                               ∎))
+isoSets-eq : {X Y : Set} → {f : X -> Y}→
+             {p : Iso {Sets} X Y f} -> {q : Iso {Sets} X Y f}
+             → p ≅ q
+isoSets-eq {f = f}{iso invf f1 f2}{iso invg g1 g2} = {!!}
+{-              proof
+              iso invf f1 f2
+              ≅⟨ cong (λ x -> iso invf f1 x) {!ir f2 g2!} ⟩
+              iso invf f1 g2
+              ≅⟨ {!!} ⟩
+              {!!}
+              ≅⟨ {!!} ⟩
+              iso invg g1 g2
+              ∎
+-}
 --------------------------------------------------
 {- Ejercicio:
  Probar que un isormofismo en (C : Cat) es un isomorfismo en (C Op).
@@ -472,8 +503,8 @@ open Iso
 
 isoCatOp : {C : Cat}{A B : Obj C}{f : Hom C A B} -> Iso {C} A B f
            -> Iso {C Op} B A f
-isoCatOp {C}{A}{B}{f}(iso inv law1 law2) = iso {!f!} {!!} {!!}
-                                           where open Cat (C Op)
+isoCatOp {C}(iso inv law1 law2) = iso inv law2 law1
+                               
 --------------------------------------------------
 {- Ejercicio EXTRA:
  Definir la categoría de pointed sets:
@@ -534,44 +565,59 @@ module PointedSets where
 -}
 module FiniteSetsCat where
   record FiniteSetsCat₀ : Set₁ where
-    constructor _,_
+    constructor _&_&_&_
     field
       conj : Set
-      prop : {!!}
+      size : ℕ
+      biyec : conj -> Fin size
+      prop : Iso {Sets} conj (Fin size) biyec
       
   open FiniteSetsCat₀
 
   record FiniteSetsCat₁ (X Y : FiniteSetsCat₀) : Set where
-    constructor _&_
+    constructor _,_
     field
-      fun : {!!}
-      isomorfismo :  {!!}
-
+      fun : conj X -> conj Y
+--      isomorfismo : Iso {Sets} (conj X) (conj Y) fun
+      isomorfismo : Biyectiva fun
   open FiniteSetsCat₁
 
-  _**_ : {X Y Z : FiniteSetsCat₀} →
+{-  _**_ : {X Y Z : FiniteSetsCat₀} →
       FiniteSetsCat₁ Y Z → FiniteSetsCat₁ X Y → FiniteSetsCat₁ X Z
-  _**_ = {!!}
-
-{-  _**_ {A , a} {B , b} {C , c} (f & p) (g & q) = (f ∘ g) & (proof
-                          f (g a)
-                          ≅⟨ cong f q ⟩
-                          f b
-                          ≅⟨ p ⟩
-                          c
-                          ∎)
-  -}                        
+  (f , iso invf p1 p2) ** (g , iso invg q1 q2) = (f ∘ g) , (iso (invg ∘ invf) (ext (λ z → proof
+                    f (g (invg (invf z)))
+                    ≅⟨ cong f (cong-app q1 (invf z)) ⟩
+                    f (invf z)
+                    ≅⟨ cong-app p1 z ⟩
+                    z
+                    ∎)) (ext (λ x →
+                    proof
+                    invg (invf (f (g x)))
+                    ≅⟨ cong invg (cong-app p2 (g x)) ⟩
+                    invg (g x)
+                    ≅⟨ cong-app q2 x ⟩
+                    x
+                    ∎)))
+-}
   FiniteSetsCat-eq : {X Y : FiniteSetsCat₀} → {f g : FiniteSetsCat₁ X Y}
-                   → {!!} → f ≅ g
-  FiniteSetsCat-eq = {!!}
-  --{f = f & p} {.f & q} refl = cong₂ _&_ refl (ir p q)
+                   → fun f ≅ fun g → f ≅ g
+  FiniteSetsCat-eq {f = f , f1} {g , g1} p = {!f1!} 
+{-                   proof
+                   (f , f1)
+                   ≅⟨ cong (λ x -> (x , f1)) {!p!} ⟩
+                   (g , f1)
+                   ≅⟨ {!!} ⟩
+                   (g , g1)
+                   ∎
+                   
+  -}                      
 
   FiniteSetsCat : Cat
   FiniteSetsCat = record
              { Obj = FiniteSetsCat₀
              ; Hom = FiniteSetsCat₁
-             ; iden = {!!}
-             ; _∙_ = _**_
+             ; iden = id , {!(iso id refl refl)!}
+             ; _∙_ = {!!}
              ; idl = {!!}
              ; idr = {!!}
              ; ass = {!!}
