@@ -456,6 +456,16 @@ Ayuda : puede ser útil usar cong-app
 Biyectiva : {X Y : Set}(f : X → Y) → Set
 Biyectiva {X} {Y} f = (y : Y) → Σ X (λ x → (f x ≅ y) × (∀ x' → f x' ≅ y → x ≅ x')) 
 
+inyectividad : {X Y : Set}{f : X -> Y}{x y : X} -> Biyectiva f -> f x ≅ f y -> x ≅ y
+inyectividad {f = f} {x} {y} p q with p (f x)
+inyectividad {f = f} {x} {y} p q | z , p1 , p2 = proof
+                                                  x
+                                                  ≅⟨ sym (p2 x refl) ⟩
+                                                  z
+                                                  ≅⟨ p2 y (sym q) ⟩
+                                                  y
+                                                  ∎
+
 inversa : {X Y : Set}(f : X → Y) -> Biyectiva f -> Y -> X
 inversa f p y with p y
 inversa f p y | x , q , r = x
@@ -481,20 +491,35 @@ biyec-is-iso {f = f} (iso inv law1 law2) y = (inv y) , ((cong-app law1 y) , (λ 
                                ≅⟨ cong-app law2 x ⟩
                                x
                                ∎))
-isoSets-eq : {X Y : Set} → {f : X -> Y}→
-             {p : Iso {Sets} X Y f} -> {q : Iso {Sets} X Y f}
+                               
+isoSets-eq-aux1 : {X Y : Set} → {f : X -> Y}→
+             {p q : Iso {Sets} X Y f} -> Iso.inv p ≅ Iso.inv q
              → p ≅ q
-isoSets-eq {f = f}{iso invf f1 f2}{iso invg g1 g2} = {!!}
-{-              proof
+isoSets-eq-aux1 {p = iso invf f1 f2} {iso .invf g1 g2} refl = 
+              proof
               iso invf f1 f2
-              ≅⟨ cong (λ x -> iso invf f1 x) {!ir f2 g2!} ⟩
+              ≅⟨ cong (λ x -> iso invf f1 x) (ir f2 g2) ⟩
               iso invf f1 g2
-              ≅⟨ {!!} ⟩
-              {!!}
-              ≅⟨ {!!} ⟩
-              iso invg g1 g2
+              ≅⟨ cong (λ x -> iso invf x g2) (ir f1 g1) ⟩
+              iso invf g1 g2
               ∎
--}
+
+isoSets-eq-aux2 : {X Y : Set} → {f : X → Y} →
+             {p q : Iso {Sets} X Y f} -> Iso.inv p ≅ Iso.inv q
+isoSets-eq-aux2 {f = f} {iso invf law1 law2} {iso invg law3 law4} = ext (λ y → inyectividad {f = f} (biyec-is-iso (iso invf law1 law2)) (
+  proof
+  f (invf y)
+  ≅⟨ cong-app law1 y ⟩
+  y
+  ≅⟨ sym (cong-app law3 y) ⟩
+  f (invg y)
+  ∎))
+
+isoSets-eq : {X Y : Set} → {f : X -> Y} →
+             (p q : Iso {Sets} X Y f) → 
+             p ≅ q
+isoSets-eq p q = isoSets-eq-aux1 (isoSets-eq-aux2 {p = p}{q})
+
 --------------------------------------------------
 {- Ejercicio:
  Probar que un isormofismo en (C : Cat) es un isomorfismo en (C Op).
@@ -578,11 +603,10 @@ module FiniteSetsCat where
     constructor _,_
     field
       fun : conj X -> conj Y
---      isomorfismo : Iso {Sets} (conj X) (conj Y) fun
-      isomorfismo : Biyectiva fun
+      isomorfismo : Iso {Sets} (conj X) (conj Y) fun
   open FiniteSetsCat₁
 
-{-  _**_ : {X Y Z : FiniteSetsCat₀} →
+  _**_ : {X Y Z : FiniteSetsCat₀} →
       FiniteSetsCat₁ Y Z → FiniteSetsCat₁ X Y → FiniteSetsCat₁ X Z
   (f , iso invf p1 p2) ** (g , iso invg q1 q2) = (f ∘ g) , (iso (invg ∘ invf) (ext (λ z → proof
                     f (g (invg (invf z)))
@@ -598,29 +622,20 @@ module FiniteSetsCat where
                     ≅⟨ cong-app q2 x ⟩
                     x
                     ∎)))
--}
+
   FiniteSetsCat-eq : {X Y : FiniteSetsCat₀} → {f g : FiniteSetsCat₁ X Y}
                    → fun f ≅ fun g → f ≅ g
-  FiniteSetsCat-eq {f = f , f1} {g , g1} p = {!f1!} 
-{-                   proof
-                   (f , f1)
-                   ≅⟨ cong (λ x -> (x , f1)) {!p!} ⟩
-                   (g , f1)
-                   ≅⟨ {!!} ⟩
-                   (g , g1)
-                   ∎
-                   
-  -}                      
+  FiniteSetsCat-eq {f = f , f1} {.f , g1} refl = cong ((_,_) f) (isoSets-eq f1 g1)
 
   FiniteSetsCat : Cat
   FiniteSetsCat = record
              { Obj = FiniteSetsCat₀
              ; Hom = FiniteSetsCat₁
-             ; iden = id , {!(iso id refl refl)!}
-             ; _∙_ = {!!}
-             ; idl = {!!}
-             ; idr = {!!}
-             ; ass = {!!}
+             ; iden = id , (iso id refl refl)
+             ; _∙_ = _**_
+             ; idl = FiniteSetsCat-eq refl
+             ; idr = FiniteSetsCat-eq refl
+             ; ass = FiniteSetsCat-eq refl
              }
 
 --------------------------------------------------
