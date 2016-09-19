@@ -157,6 +157,29 @@ module TreeF where
 {- Hom functor : probar que el Hom de una categoría C
   es un bifunctor Hom : (C Op) ×C C → Sets
   -}
+module BifunctorHom (C : Cat) where
+  open Cat C renaming (Obj to ObjC; Hom to HomC; _∙_ to _**_; iden to idenC; idl to idlC)
+  open Cat ((C Op) ×C C) renaming (Obj to ObjCxC; iden to idenCxC; idl to idlCxC)
+
+  fstIsIden : {X : ObjCxC} -> fst (idenCxC {X}) ≅ idenC {fst X}
+  fstIsIden = {!idenCxC!}
+
+  BifunctorHom : Fun ((C Op) ×C C) Sets
+  OMap BifunctorHom (x , y) = HomC x y
+  HMap BifunctorHom (f1 , f2) g = f2 ** (g ** f1)
+--  fid BifunctorHom {x1 , x2} with idenCxC {x1 , x2}
+--  fid BifunctorHom {x1 , x2} | id1 , id2 = ext {!!}
+{-ext (λ a → proof
+                                           snd idenCxC ** (a ** fst idenCxC)
+                                           ≅⟨ {!idlC!} ⟩
+                                           a
+                                           ∎)-}
+  fid BifunctorHom {x1 , x2} = ext (λ a → proof
+                                           snd idenCxC ** (a ** fst idenCxC)
+                                           ≅⟨ {!idlC!} ⟩
+                                           a
+                                           ∎)
+  fcomp BifunctorHom = {!!}
 
 --------------------------------------------------
 {- Composición de funtores -}
@@ -184,7 +207,8 @@ FunctorEq : ∀{C : Cat}{D : Cat}
 FunctorEq (functor OMap1 HMap1 fid1 fcomp1) (functor .OMap1 .HMap1 fid2 fcomp2) refl refl = 
                          proof
                          functor OMap1 HMap1 fid1 fcomp1
-                         ≅⟨ {!!} ⟩
+                         ≅⟨ cong₂ (functor OMap1 HMap1) (iir fid1 fid2) 
+                           (iext (λ a → iext (λ a₁ → iext (λ a₂ → i2ir fcomp1 fcomp2)))) ⟩
                          functor OMap1 HMap1 fid2 fcomp2
                          ∎
 --------------------------------------------------
@@ -218,8 +242,6 @@ isomorfismo en C, entonces (HMap F f) es un isomotfismo en D.
 -}
 
 open Iso
-
---FunIso-law2 : (.D ∙ HMap inv) (HMap f) ≅ iden .D
 
 FunIso : ∀{C D}(F : Fun C D){X Y}{f : Cat.Hom C X Y}
        → Iso {C} X Y f → Iso {D} _ _ (HMap F f)
