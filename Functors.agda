@@ -158,28 +158,36 @@ module TreeF where
   es un bifunctor Hom : (C Op) ×C C → Sets
   -}
 module BifunctorHom (C : Cat) where
-  open Cat C renaming (Obj to ObjC; Hom to HomC; _∙_ to _**_; iden to idenC; idl to idlC)
-  open Cat ((C Op) ×C C) renaming (Obj to ObjCxC; iden to idenCxC; idl to idlCxC)
-
-  fstIsIden : {X : ObjCxC} -> fst (idenCxC {X}) ≅ idenC {fst X}
-  fstIsIden = {!idenCxC!}
+  open Cat C renaming (Obj to ObjC; Hom to HomC; _∙_ to _**_; iden to idenC; idl to idlC; idr to idrC; ass to assC)
+  open Cat ((C Op) ×C C) renaming ( _∙_ to _***_; iden to idenCxC)
 
   BifunctorHom : Fun ((C Op) ×C C) Sets
   OMap BifunctorHom (x , y) = HomC x y
   HMap BifunctorHom (f1 , f2) g = f2 ** (g ** f1)
---  fid BifunctorHom {x1 , x2} with idenCxC {x1 , x2}
---  fid BifunctorHom {x1 , x2} | id1 , id2 = ext {!!}
-{-ext (λ a → proof
-                                           snd idenCxC ** (a ** fst idenCxC)
-                                           ≅⟨ {!idlC!} ⟩
-                                           a
-                                           ∎)-}
-  fid BifunctorHom {x1 , x2} = ext (λ a → proof
-                                           snd idenCxC ** (a ** fst idenCxC)
-                                           ≅⟨ {!idlC!} ⟩
-                                           a
-                                           ∎)
-  fcomp BifunctorHom = {!!}
+  fid BifunctorHom {X} = ext (λ a → proof
+                               snd (idenCxC {X}) ** (a ** fst (idenCxC {X}))
+                               ≅⟨ refl ⟩
+                               idenC ** (a ** fst (idenCxC {X}))
+                               ≅⟨ idlC ⟩
+                               (a ** fst (idenCxC {X}))
+                               ≅⟨ refl ⟩
+                               a ** idenC
+                               ≅⟨ idrC ⟩
+                               a
+                               ∎)
+  fcomp BifunctorHom {X} {Y} {Z} {f} {g} = ext (λ a → proof
+                             snd (f *** g) ** (a ** fst (f *** g))
+                             ≅⟨ refl ⟩
+                             (snd f ** snd g) ** (a ** fst (f *** g))
+                             ≅⟨ assC ⟩
+                             snd f ** (snd g ** (a ** fst (f *** g)))
+                             ≅⟨ refl ⟩
+                             snd f ** (snd g ** (a ** (fst g ** (fst f))))
+                             ≅⟨ cong (λ x -> snd f ** (snd g ** x)) (sym assC) ⟩
+                             snd f ** (snd g ** ((a ** fst g) ** (fst f)))
+                             ≅⟨ cong (λ x -> snd f ** x) (sym assC) ⟩
+                             snd f ** ((snd g ** (a ** fst g)) ** fst f)
+                             ∎)
 
 --------------------------------------------------
 {- Composición de funtores -}
