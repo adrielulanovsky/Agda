@@ -33,18 +33,57 @@ NatTEq2 {α = natural cmp _} {natural .cmp _} refl refl refl =
 --------------------------------------------------
 -- la identidad es una transformación natural
 idNat : ∀{a b c d}{C : Cat {a} {b}}{D : Cat {c} {d}}{F : Fun C D} → NatT F F
-idNat {D = D}{F} = let open Cat D in {!!}
+idNat {D = D}{F} = let open Cat D in natural iden (λ {X}{Y}{f} -> 
+                   proof
+                   HMap F f ∙ iden
+                   ≅⟨ idr ⟩
+                   HMap F f
+                   ≅⟨ sym idl ⟩
+                   iden ∙ HMap F f
+                   ∎)
 
 -- Composición (vertical) de transformaciones naturales
 compVNat : ∀{a b c d}{C : Cat {a} {b}}{D : Cat {c} {d}}{F G H : Fun C D} → 
           NatT G H → NatT F G → NatT F H
-compVNat {D = D}{F}{G}{H} α β = let open Cat D; open NatT in {!!}
+compVNat {D = D}{F}{G}{H} b a = let open Cat D; open NatT in
+                                natural ((cmp b) ∙ (cmp a))
+                                        (λ {X}{Y}{f} -> 
+                proof
+                HMap H f ∙ (cmp b ∙ cmp a)
+                ≅⟨ sym ass ⟩
+                (HMap H f ∙ cmp b) ∙ cmp a
+                ≅⟨ cong (λ x -> x ∙ cmp a) (nat b) ⟩
+                (cmp b ∙ HMap G f) ∙ cmp a
+                ≅⟨ ass ⟩
+                cmp b ∙ (HMap G f ∙ cmp a)
+                ≅⟨ cong ((_∙_) (cmp b)) (nat a) ⟩
+                cmp b ∙ (cmp a ∙ HMap F f)
+                ≅⟨ sym ass ⟩
+                (cmp b ∙ cmp a) ∙ HMap F f
+                ∎ )
 
 --------------------------------------------------
 {- Categorías de funtores
  Dadas dos categorías C y D, los objetos son los funtores : C → D,
  y los morfismos son las transformaciones naturales entre ellos.
 -}
+FunctorCat-id : ∀{a b c d} → {C : Cat {a}{b}} → {D : Cat {c}{d} } → {F G : Fun C D} -> (f : NatT F G) → compVNat idNat f ≅ f
+FunctorCat-id {D = D} a = let open NatT
+                              open Cat D
+{-                          in proof
+                              (compVNat idNat a)
+                              ≅⟨ {!!} ⟩
+                              {!!}
+                              ≅⟨ {!!} ⟩
+                              a
+                              ∎-}
+                            in NatTEq {!proof
+                               cmp (compVNat idNat a)
+                               ≅⟨ ? ⟩
+                               cmp a
+                               ∎!}
+                               
+
 FunctorCat : ∀{a b c d} → Cat {a}{b} → Cat {c}{d} → Cat
 FunctorCat C D = record{
   Obj  = Fun C D;
@@ -71,6 +110,19 @@ module Ejemplos where
  open Cat (Sets {lzero})
 
  --
+ revNat-proof : {X Y : Obj} {f : Hom X Y}(a : List X) →
+      (HMap ListF f ∙ reverse) a ≅ (reverse ∙ HMap ListF f) a
+ revNat-proof [] = refl
+ revNat-proof {f = f} (x ∷ xs) = {!!}{-proof
+                      (HMap ListF f ∙ reverse) (x ∷ xs)
+                      ≅⟨ {!!} ⟩
+                      {!map f ((reverse xs) ++ (x ∷ []))!}
+                      ≅⟨ {!!} ⟩
+                      {!!}
+                      ≅⟨ {!!} ⟩
+                      (reverse ∙ HMap ListF f) (x ∷ xs)
+                      ∎-}
+
  revNat : NatT ListF ListF
  revNat = natural reverse {!!}
 
@@ -79,16 +131,26 @@ module Ejemplos where
  concatNat = natural concat {!!}
 
  --
+{- lengthNat-proof : {X Y : Obj} {f : Hom X Y} →
+      (HMap (K ℕ) f) ∙ length ≅ length ∙ HMap ListF f
+ lengthNat-proof = {!_∙_!}
+-}
+
  lengthNat : NatT ListF (K ℕ)
- lengthNat = natural length {!!}
+ lengthNat = natural length (ext {!HMap (K ℕ) !})
 
  --
  safeHead : {A : Set} → List A → Maybe A
  safeHead [] = nothing
  safeHead (x ∷ xs) = just x
 
+ headNat-proof : {X Y : Obj} {f : Hom X Y}(xs : List X) →
+      (HMap MaybeF f ∙ safeHead) xs ≅ (safeHead ∙ HMap ListF f) xs
+ headNat-proof [] = refl
+ headNat-proof (x ∷ xs) = refl
+
  headNat : NatT ListF MaybeF
- headNat = natural safeHead {!!}
+ headNat = natural safeHead (ext headNat-proof)
 
  --
 --------------------------------------------------
