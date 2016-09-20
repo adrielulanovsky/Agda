@@ -190,13 +190,14 @@ curry⇔ = curry→ , curry←
 --------------------------------------
 {- Ejercicios -}
 ∨∧→ : {P Q R : prop} → (P ∨ Q → R) → ((P → R) ∧ (Q → R))
-∨∧→ = {!!}
+∨∧→ x = (λ p → x (left p)) , (λ q → x (right q))
 
 ∨∧← : {P Q R : prop} → ((P → R) ∧ (Q → R)) → (P ∨ Q → R) 
-∨∧← x y = {!!}
+∨∧← (pr , qr) (left p) = pr p
+∨∧← (pr , qr) (right q) = qr q
 
 ∨∧ : {P Q R : prop} → (P ∨ Q → R) ⇔ ((P → R) ∧ (Q → R))
-∨∧ = {!!}
+∨∧ = ∨∧→ , ∨∧←
 ----------------------------------------
 
 {- Introducimos la negación
@@ -215,21 +216,23 @@ contrapos pq nq = λ p → nq (pq p)
 -----------------------------------------------
 {- Ejercicio: paradoja -}
 paradox : {P : prop} → ¬ (P ⇔ ¬ P) 
-paradox psiinop = {!!}
+paradox (pnp , npp) = pnp (npp (λ x → pnp x x)) (npp (λ x → pnp x x))
 
 {- Ejercicio: Probamos las leyes de de Morgan -}
 
 deMorgan¬∨ : {P Q : prop} → ¬ (P ∨ Q) → ¬ P ∧ ¬ Q 
-deMorgan¬∨ npq = {!!} 
+deMorgan¬∨ npq = (λ x → npq (left x)) , (λ x → npq (right x)) 
   
 deMorgan¬∧¬ : {P Q : prop} → (¬ P) ∧ (¬ Q) → ¬ (P ∨ Q)
-deMorgan¬∧¬ npnq poq = {!!}
+deMorgan¬∧¬ (p , q) (left r) = p r
+deMorgan¬∧¬ (p , q) (right s) = q s 
   
 deMorgan¬∨¬ : {P Q : prop} → (¬ P) ∨ (¬ Q) → ¬ (P ∧ Q)
-deMorgan¬∨¬ nponq = {!!}
+deMorgan¬∨¬ (left p) = λ x → p (fst x)
+deMorgan¬∨¬ (right q) = λ x → q (snd x)
 
 deMorgan¬∧ : {P Q : prop} → ¬ (P ∧ Q) → (¬ P) ∨ (¬ Q)
-deMorgan¬∧ npq = {!!}
+deMorgan¬∧ x = {!!}
 
 -------------------------------------------------------
 
@@ -316,11 +319,12 @@ Ejercicio: Intentar probar que es falso
 ∃∨ : {A : Set}{P Q : A → prop} → 
   (∃ A (λ a → P a ∨ Q a)) → (∃ A P) ∨ (∃ A Q)
 ∃∨ (a , left p) = left (a , p)
-∃∨ (a , right q) = {!!}
+∃∨ (a , right q) = right (a , q)
 
 ∨∃ : {A : Set}{P Q : A → prop} → 
   (∃ A P) ∨ (∃ A Q) → (∃ A (λ a → P a ∨ Q a))
-∨∃ x = {!!}
+∨∃ (left (a , x)) = a , (left x)
+∨∃ (right (a , x)) = a , (right x)
 
 ------------------------------------------------------------
 {- Ejercicio: las leyes de deMorgan infinitas -
@@ -330,11 +334,11 @@ Ejercicio: Intentar probar que es falso
 {- ¬ (∃ x:A. P x) ⇔ ∀ x:A. ¬ P x -}
 deMorgan¬∃ : {A : Set}{P : A → prop} →
            ¬ (∃ A (λ x → P x)) → ((x : A) → ¬ (P x))
-deMorgan¬∃ = {!!}
+deMorgan¬∃ x x1 x2 = x (x1 , x2)
 
 deMorgan∀¬ : {A : Set}{P : A → prop} →
            ((x : A) → ¬ (P x)) → ¬ (∃ A (λ x → P x))
-deMorgan∀¬ f x = {!!} 
+deMorgan∀¬ f (a , x) = f a x 
 
 {- ¬ (∀ x:A. P x) ⇔ ∃ x:A . ¬ P x -}
 deMorgan¬∀ : {A : Set}{P : A → prop} →
@@ -343,18 +347,18 @@ deMorgan¬∀ x = {!!}
 
 deMorgan∃¬ : {A : Set}{P : A → prop} →
            ∃ A (λ x → ¬ (P x)) → ¬ ((x : A) → P x)
-deMorgan∃¬ x np = {!!}
+deMorgan∃¬ (a , x) np = x (np a)
 
 --------------------------------------------------
 {- relación entre ∀ y ∃ -}
 
 curry∀→ : {A : Set}{P : A → Set}{Q : prop}
          → ((∃ A P) → Q) → (a : A) → P a → Q
-curry∀→ x = {!!}
+curry∀→ x = λ a x1 → x (a , x1)
 
 curry∀← : {A : Set}{P : A → Set}{Q : prop}
          → ((a : A) → P a → Q) → ((∃ A P) → Q)
-curry∀← x e = {!!}
+curry∀← x (a , x1) = x a x1
 
 --------------------------------------------------
 -- Ejercicios adicionales
@@ -368,7 +372,7 @@ curry∀← x e = {!!}
 ¬¬ P = ¬ (¬ P)
 
 pnnp : {P : prop} → P → ¬¬ P 
-pnnp p np = {!!}
+pnnp p np = contradict (p , np)
 
 {-
 raa : {P : prop} → ¬¬ P → P
@@ -376,8 +380,9 @@ raa nnp = efq (nnp (λ x → nnp (λ x' → {!!})))
  no se puede probar!
 -}
 
+{-Pedirle a martin que me anote a la lista -}
 ¬¬terex : {P : prop} → ¬¬ (P ∨ ¬ P)
-¬¬terex = {!!}
+¬¬terex x = contradict (deMorgan¬∨ x)
 
 TerEx : Set₁
 TerEx = {P : prop} → P ∨ ¬ P
@@ -386,31 +391,32 @@ RAA : Set₁
 RAA = {P : prop} → ¬¬ P → P
 
 RAA→TerEx : RAA → TerEx
-RAA→TerEx = {!!}
+RAA→TerEx x = x ¬¬terex
 
 TerEx→RND : TerEx → RAA
-TerEx→RND = {!!}
+TerEx→RND x1 x2 = case (λ x → x) (λ x → efq (contradict (x , x2))) x1
 
 ret¬¬ : {P : prop} → P → ¬¬ P
-ret¬¬ = {!!}
+ret¬¬ = pnnp
 
 bind¬¬ : {P Q : prop} → ¬¬ P → (P → ¬¬ Q) → ¬¬ Q 
-bind¬¬ = {!!}
+bind¬¬ x x1 x2 = contradict (contrapos x1 (ret¬¬ x2) , x)
 
 map¬¬ : {P Q : prop} → ¬¬ P → (P → Q) → ¬¬ Q
-map¬¬ = {!!}
+map¬¬ x x1 x2 = contradict (contrapos x1 x2 , x)
 
 app¬¬ : {P Q : prop} → ¬¬ (P → Q) → ¬¬ P → ¬¬ Q
-app¬¬ = {!!}
+app¬¬ x x1 x2 = x (λ x3 → contradict ((contrapos x3 x2) , x1))
 
 ∧¬¬-1 : {P Q : prop} → ¬¬ (P ∧ Q) → ¬¬ P ∧ ¬¬ Q
-∧¬¬-1 = {!!}
+∧¬¬-1 x = deMorgan¬∨ (λ x1 → x (deMorgan¬∨¬ x1))
+
 
 ∧¬¬-2 : {P Q : prop} → ¬¬ P ∧ ¬¬ Q → ¬¬ (P ∧ Q) 
-∧¬¬-2 = {!!}
+∧¬¬-2 x x1 = contradict (deMorgan¬∧ x1 , deMorgan¬∧¬ x)
 
 ∧¬¬ : {P Q : prop} → ¬¬ (P ∧ Q) ⇔ ¬¬ P ∧ ¬¬ Q
-∧¬¬ = {!!}
+∧¬¬ = ∧¬¬-1 , ∧¬¬-2
 
 {-
 ∨¬¬-1 : {P Q : prop} → ¬¬ (P ∨ Q) → ¬¬ P ∨ ¬¬ Q
@@ -419,7 +425,8 @@ no se puede probar!
 -}
 
 ∨¬¬-2 : {P Q : prop} → ¬¬ P ∨ ¬¬ Q → ¬¬ (P ∨ Q) 
-∨¬¬-2 nnp∨nnq = {!!}
+∨¬¬-2 (left p) x = p (fst (deMorgan¬∨ x))
+∨¬¬-2 (right q) x = q (snd (deMorgan¬∨ x))
 
 
 {-
@@ -429,9 +436,4 @@ no se puede probar!
 -}
 
 ¬¬deMorgan¬∧ : {P Q : prop} → ¬ (P ∧ Q) → ¬¬ ((¬ P) ∨ (¬ Q))
-¬¬deMorgan¬∧ = {!!}
-
-
-
-
-{- git clone http://www.cifasis-conicet.gov.ar/~catpro/repo -}
+¬¬deMorgan¬∧ x x1 = x1 (deMorgan¬∧ x)

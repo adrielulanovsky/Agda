@@ -7,7 +7,7 @@
            Mauro Jaskelioff
            
 
-   Igualdad, Egalité, Equality
+   Igualdad, Equalité, Equality
 
 
 -}
@@ -101,10 +101,10 @@ data _≡_ {A : Set} : A → A → Set where
 {- Probar sym y trans usando subst -}
 
  sym' : {A : Set} → {a b : A} → a ≡ b → b ≡ a
- sym' {a = a} p = subst {!!} {!!} {!!}
+ sym' {a = a} p = subst (λ x → x ≡ a) p refl
 
  trans' : {A : Set}{a b c : A} → a ≡ b → b ≡ c → a ≡ c
- trans' {a = a} ab bc = subst {!!} {!!} {!!}
+ trans' {a = a} ab bc = subst (λ x → a ≡ x) bc ab
 
 --------------------------------------------------
 
@@ -193,10 +193,29 @@ data _≡_ {A : Set} : A → A → Set where
   intentar que la prueba sea legible usando ≡-Reasoning
 -}
  +-comm : (m n : ℕ) → m + n ≡ n + m
- +-comm m n = {!!}
+ +-comm m zero = +0 m
+ +-comm m (suc n) = begin
+                     m + (suc n)
+                     ≡⟨ +suc m n ⟩
+                     suc (m + n)
+                     ≡⟨ cong suc (+-comm m n) ⟩
+                     suc (n + m)
+                     ≡⟨ refl ⟩
+                     suc n + m
+                    ∎
 
  +-assoc : (m n l : ℕ) → m + (n + l) ≡ (m + n) + l
- +-assoc m n l = {!!}
+ +-assoc zero n l = refl
+ +-assoc (suc m) n l = begin
+                     suc m + (n + l)
+                     ≡⟨ refl ⟩
+                     suc (m + (n + l))
+                     ≡⟨ cong suc (+-assoc m n l) ⟩
+                     suc (m + n + l)
+                     ≡⟨ refl ⟩
+                     suc (m + n) + l
+                    ∎
+
 
 
 
@@ -280,13 +299,12 @@ data _≡_ {A : Set} : A → A → Set where
  Ayuda: debe usar subst.
 -}
 
-{- Descomentar para realizar el ejercicio -}
-
- respProp : {A : Set}{P : A → Set}{f : (a : A) → P a}{x y : A} →
-           (q : x ≡ y) →
-           subst P q (f x) ≡ f y
- respProp refl = refl
-
+{- Descomentar para realizar el ejercicio
+respProp : {A : Set}{P : A → Set}{f : (a : A) → P a}{x y : A} →
+         (q : x ≡ y) →
+         f x ≡ f y
+respProp refl = refl
+-}
 ---------------------------------------------------------------------------------
 
 
@@ -320,7 +338,7 @@ respHet refl = refl
 {- Toda igualdad heterogénea puede ser llevada a la igualdad
 proposicional y viceversa -}
 
-open import Relation.Binary.PropositionalEquality using (_≡_)
+open import Relation.Binary.PropositionalEquality as _≡_ using (_≡_)
 
 ≅→≡ : ∀ {a} {A : Set a} {x y : A} → x ≅ y → x ≡ y
 ≅→≡ refl = _≡_.refl
@@ -351,3 +369,187 @@ postulate ext : ∀{a b}{A : Set a}{B B' : A → Set b}
                 {f : ∀ a → B a}{g : ∀ a → B' a} → 
                 (∀ a → f a ≅ g a) → f ≅ g
 
+
+
+
+
+
+
+
+
+
+
+
+
+{- Veremos, el uso de records para definir estructuras algebraicas -}
+
+{- Notar el uso de de Set₁ en lugar de Set ya que tenemos que
+ situarnos en el nivel siguiente a Set₀ = Set, para hablar de cosas en
+ Set (como carrier).
+
+Los subindices son ₀ = \_0 y ₁ = \_1
+
+ -}
+
+
+record Monoid : Set₁  where
+  infixr 7 _∙_
+  field  Carrier : Set
+         _∙_     : Carrier → Carrier → Carrier  {- ∙ = \. -}
+         ε       : Carrier
+         lid     : {x : Carrier} → ε ∙ x ≅ x
+         rid     : {x : Carrier} → x ∙ ε ≅ x
+         assoc   : {x y z : Carrier} → x ∙ (y ∙ z) ≅ (x ∙ y) ∙ z
+
+
+
+
+
+
+
+
+{- ¿Qué sucede si queremos usar un Carrier en Set₁? ¿o en Set₂? -}
+
+
+open import Data.Nat hiding (_⊔_)
+
+-- Monoide de Naturales y suma
+
+module NatMonoid where
+  NatMonoid : Monoid
+  NatMonoid = record
+                { Carrier = ℕ
+                ; _∙_ = _+_
+                ; ε = 0
+                ; lid = refl
+                ; rid = λ{x} → ≡→≅ (Propositional.+0 x)
+                ; assoc = λ {x}{y}{z} -> ≡→≅ (Propositional.+-assoc x y z) } 
+  
+
+
+
+
+
+
+open NatMonoid
+
+
+
+
+
+
+
+
+
+--------------------------------------------------
+{- Ejercicio: Probar que las listas son un monoide -}
+
+open ≅-Reasoning renaming (begin_ to proof_)
+
+data List (A : Set) : Set where
+   [] : List A
+   _∷_ : A → List A → List A
+
+infixl 7 _∷_
+
+
+
+
+
+
+
+
+--------------------------------------------------
+open import Function
+
+-- Monoide de endofunciones
+EndoMonoid : Set → Monoid
+EndoMonoid X = record
+                 { Carrier = X → X
+                 ; _∙_ = λ f g x → f (g x)
+                 ; ε = id
+                 ; lid = refl
+                 ; rid = refl
+                 ; assoc = refl }
+
+
+module Cayley where
+
+  open Monoid using (Carrier)
+
+  Cayley : Monoid → Monoid
+  Cayley M = EndoMonoid (Carrier M) 
+
+  rep : (M : Monoid) → Carrier M → Carrier (Cayley M)
+  rep M x = {!!}
+           where open Monoid M
+
+  abs : (M : Monoid) → Carrier (Cayley M) → Carrier M
+  abs M f = {!!}
+           where open Monoid M
+
+  lemma : (M : Monoid) → {x : Carrier M} →
+          abs M (rep M x) ≅ x
+  lemma M = {!!}
+           where open Monoid M
+
+module Monoid-Homomorphism where
+ open Monoid
+
+-- Homomorfismos de monoides
+ record Is-Monoid-Homo {M N : Monoid}(morph : Carrier M → Carrier N) : Set₁ where
+   open Monoid M renaming (ε to ε₁ ;  _∙_ to _∙₁_)
+   open Monoid N renaming (ε to ε₂ ;  _∙_ to _∙₂_)
+   field
+    preserves-unit : morph ε₁ ≅ ε₂
+    preserves-mult : ∀{x y} → morph (x ∙₁ y) ≅ morph x ∙₂ morph y 
+
+open Monoid-Homomorphism
+open Cayley
+
+rep-is-monoid-homo : {M : Monoid} → Is-Monoid-Homo {M} {Cayley M} (rep M)
+rep-is-monoid-homo {M} = {!!}
+
+--------------------------------------------------
+{- Ejercicio: Probar que length es un homorfismo de monoides -}
+
+length : {A : Set} → List A → ℕ
+length [] = 0
+length (x ∷ xs) = 1 + length xs
+
+               
+--------------------------------------------------
+module Foldr (M : Monoid) where
+
+ open Monoid M
+
+ {- Ejercicio : Definir foldr y probar que (foldr _∙_ ε) es un homorfismo de monoides -}
+
+ foldr : {A B : Set} → (A → B → B) → B → List A → B
+ foldr _⊗_ e [] = e
+ foldr _⊗_ e (x ∷ xs) = x ⊗ (foldr _⊗_ e xs)
+
+--------------------------------------------------
+
+{- Isomorfismos entre conjuntos -}
+
+record Iso (A : Set)(B : Set) : Set where
+  field fun : A → B
+        inv : B → A
+        law1 : ∀ b → fun (inv b) ≅ b
+        law2 : ∀ a → inv (fun a) ≅ a
+
+-----------------------------
+
+{- Ejercicio : introducir un tipo de datos ⊤ con un único habitante y
+probar que  ℕ es isomorfo a List ⊤ -}
+
+{- Ejercicio: introducir un constructor de tipos Maybe y probar que
+Maybe ℕ es isomorfo a ℕ -}
+
+{- Ejercicio: introducir un constructor de tipos _×_ para productos
+cartesianos (o usar el de Data.Product) y probar que (A → B × C) es
+isomorfo a (A → B) × (A → C) para todos A, B, y C, habitantes de Set -}
+
+{- Ejercicio: construir isomorfismos entre Vec A n × Vec B n y
+Vec (A × B) n para todos A, B habitantes de Set y n natural -}

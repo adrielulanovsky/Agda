@@ -62,11 +62,11 @@ data ℕ : Set where
 -}
 {-# BUILTIN NATURAL ℕ    #-}
 
-{- En versiones viejas agregar
- {-# BUILTIN ZERO    zero #-}
- {-# BUILTIN SUC     suc  #-}
--}
 
+{-
+{-# BUILTIN ZERO    zero #-}
+{-# BUILTIN SUC     suc  #-}
+-}
 
 
 
@@ -80,7 +80,7 @@ zero + n = n
 suc m + n = suc (m + n)
 
 
-{- C-c C-c divide en casos -}
+{- C-c C-c divide en casos-}
 {- C-c C-r refina el problema -}
 {- C-c C-SPC llena el agujero -}
 {- podemos buscar una definición usando M-click -}
@@ -99,7 +99,8 @@ suc m + n = suc (m + n)
 ----------------------------------------------
 {- Ejercicio : Hacer la multiplicación -}
 _*_ :  ℕ → ℕ → ℕ
-m * n = {!!}
+m * zero = zero
+m * suc y = m + (m * y) 
 ----------------------------------------------
 
 infixl 6 _+_
@@ -178,7 +179,8 @@ rev (x ∷ xs) = snoc (rev xs) x
 --------------------------------------------------
 {- Ej : concatenar dos listas -}
 _++_ : {A : Set} → List A → List A → List A
-xs ++ ys = {!!}
+[] ++ ys = ys
+x ∷ xs ++ ys = x ∷ (xs ++ ys)
 --------------------------------------------------
 
 infixr 4 _++_
@@ -297,11 +299,19 @@ nat (suc n) = suc (nat n)
         de manera tal que nat x = nat (emb x)
 -}
 emb : {n : ℕ} → Fin n → Fin (suc n)
-emb = {!!}
+emb zero = zero
+emb (suc y) = suc (emb y)
+
 
 {- Ej: inv me lleva de {0,1,...,n-1} a {n-1,..,1,0} -}
 inv : {n : ℕ} → Fin n → Fin n
-inv i = {!!}
+inv {zero} ()
+inv {suc y} zero = max
+inv {suc y} (suc y') =  emb (inv y') 
+
+
+
+
 -----------------------------------------------------------
 
 
@@ -338,7 +348,7 @@ Matrix m n = Vec (Vector n) m
 -------------------------------------------------------
 {- Ej: multiplicación por un escalar -}
 _*v_ : {n : ℕ} → ℕ → Vector n → Vector n
-k *v ms = mapVec {!!} ms
+k *v ms = mapVec (λ x -> k * x) ms
 
 v1 : Vector 3
 v1 = 1 ∷ 2 ∷ 3 ∷ []
@@ -348,7 +358,8 @@ test1 = 2 *v v1
 
 {- Ej: suma de vectores -}
 _+v_ : {n : ℕ} → Vector n → Vector n → Vector n
-ms +v ns = {!!}
+[] +v ns = []
+(x ∷ xs) +v (x' ∷ xs') = (x + x') ∷ (xs +v xs')
 
 v2 : Vector 3
 v2 = 2 ∷ 3 ∷ 0 ∷ []
@@ -356,9 +367,23 @@ v2 = 2 ∷ 3 ∷ 0 ∷ []
 test2 : Vector 3
 test2 = v1 +v v2
 
+{- devolver vector de tamaño n lleno de 0 -}
+vec0 : {n : ℕ} -> Vector n
+vec0 {zero} = []
+vec0 {suc y} = 0 ∷ vec0
+
+{- producto de vectores -}
+_*vv_ : {n : ℕ} -> Vector n -> Vector n -> ℕ
+[] *vv b = 0
+(x1 ∷ a) *vv (x2 ∷ b) = x1 * x2 + a *vv b
+
 {- Ej: multiplicación de un vector y una matriz -}
-_*vm_ : {m n : ℕ} → Vector m → Matrix m n → Vector n
-ms *vm nss = {!!}
+_*vm_ : {m n : ℕ} → Vector m → Matrix n m → Vector n
+vs *vm [] = []
+vs *vm (x ∷ ms) = (vs *vv x) ∷ (vs *vm ms)
+
+
+
 
 id3 : Matrix 3 3
 id3 = (1 ∷ 0 ∷ 0 ∷ []) 
@@ -371,7 +396,8 @@ test3 = v1 *vm id3
 
 {- Ej: multiplicación de matrices -}
 _*mm_ : {l m n : ℕ} → Matrix l m → Matrix m n → Matrix l n
-mss *mm nss = {!!}
+mss *mm [] = {!!}
+mss *mm (x ∷ nss) = {!!}
 
 inv3 : Matrix 3 3
 inv3 = (0 ∷ 0 ∷ 1 ∷ []) 
@@ -384,7 +410,11 @@ test4 = inv3 *mm inv3
 
 {- Ej: transposición de matrices -}
 transpose : {n m : ℕ} → Matrix m n → Matrix n m
-transpose {n} {m} matriz = {!!}
+transpose [] = {!!}
+transpose (x ∷ ms) = {!(transpose ms)!}
+
+
+
 
 ej5 : Matrix 3 3
 ej5 = ( 0 ∷ 1 ∷ 2 ∷ [])
@@ -400,11 +430,7 @@ test5 = transpose ej5
 Bajar el archivo del repositorio y hacer los ejercicios.
  git clone http://www.cifasis-conicet.gov.ar/~catpro/repo.git
 
+PARA PATTERN MATCHING EN funciones anonimas:
+ \lambda { (x , y) -> cosa ; (p , q) -> otracosa}
+
 -}
-
-
-
-
-
-
-
