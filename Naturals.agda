@@ -67,22 +67,6 @@ compVNat {D = D}{F}{G}{H} b a = let open Cat D; open NatT in
  Dadas dos categorías C y D, los objetos son los funtores : C → D,
  y los morfismos son las transformaciones naturales entre ellos.
 -}
-FunctorCat-id : ∀{a b c d} → {C : Cat {a}{b}} → {D : Cat {c}{d} } → {F G : Fun C D} -> (f : NatT F G) → compVNat idNat f ≅ f
-FunctorCat-id {D = D} a = let open NatT
-                              open Cat D
-{-                          in proof
-                              (compVNat idNat a)
-                              ≅⟨ {!!} ⟩
-                              {!!}
-                              ≅⟨ {!!} ⟩
-                              a
-                              ∎-}
-                            in NatTEq {!proof
-                               cmp (compVNat idNat a)
-                               ≅⟨ ? ⟩
-                               cmp a
-                               ∎!}
-                               
 
 FunctorCat : ∀{a b c d} → Cat {a}{b} → Cat {c}{d} → Cat
 FunctorCat C D = record{
@@ -90,10 +74,10 @@ FunctorCat C D = record{
   Hom  = NatT;
   iden = idNat;
   _∙_  = compVNat;
-  idl  = {!!};
-  idr  = {!!};
-  ass  = {!!}}
-
+  idl  = NatTEq (iext (λ _ → idl));
+  idr  = NatTEq (iext (λ _ → idr));
+  ass  = NatTEq (iext (λ _ → ass))}
+  where open Cat D
 --------------------------------------------------
 -- Algunos ejemplos de transformaciones naturales
 
@@ -110,10 +94,10 @@ module Ejemplos where
  open Cat (Sets {lzero})
 
  --
- revNat-proof : {X Y : Obj} {f : Hom X Y}(a : List X) →
-      (HMap ListF f ∙ reverse) a ≅ (reverse ∙ HMap ListF f) a
+ revNat-proof : {X Y : Set} {f : X -> Y}(a : List X) →
+      mapList f (reverse a) ≅ reverse (mapList f a)
  revNat-proof [] = refl
- revNat-proof {f = f} (x ∷ xs) = {!!}{-proof
+ revNat-proof {f = f} (x ∷ xs) = {!mapList f (reverse (x ∷ xs))!}{-proof
                       (HMap ListF f ∙ reverse) (x ∷ xs)
                       ≅⟨ {!!} ⟩
                       {!map f ((reverse xs) ++ (x ∷ []))!}
@@ -127,17 +111,34 @@ module Ejemplos where
  revNat = natural reverse {!!}
 
  --
+ concatNat-proof :  {X Y : Set} {f : X -> Y} (a : List (List X)) →
+      (mapList f) (concat a) ≅ concat (mapList (mapList f) a)
+ concatNat-proof [] = refl
+ concatNat-proof {f = f} (x ∷ xs) = proof
+                        mapList f (concat (x ∷ xs)) 
+                        ≅⟨ cong (mapList f) refl ⟩
+                        mapList f (x ++ concat xs)
+                        ≅⟨ {!!} ⟩
+                        (mapList f x) ++ mapList f (concat xs)
+                        ≅⟨ cong ((_++_) (mapList f x)) (concatNat-proof xs) ⟩
+                        (mapList f x) ++ concat (mapList (mapList f) xs)
+                        ≅⟨ refl ⟩
+                        concat (mapList f x ∷ mapList (mapList f) xs)
+                        ∎
+--cong₂ _++_ (cong (mapList {!!}) {!!}) {!!}
+
  concatNat : NatT (ListF ○ ListF) ListF
- concatNat = natural concat {!!}
+ concatNat = natural concat (ext concatNat-proof)
 
  --
-{- lengthNat-proof : {X Y : Obj} {f : Hom X Y} →
-      (HMap (K ℕ) f) ∙ length ≅ length ∙ HMap ListF f
- lengthNat-proof = {!_∙_!}
--}
+ lengthNat-proof : {X Y : Set} {f : X → Y} (a : List X) →
+       length a ≅ length (HMap ListF f a)
+ lengthNat-proof [] = refl
+ lengthNat-proof {f = f}(x ∷ as) = cong suc (lengthNat-proof as)
 
+-- C-c C-n normaliza el término que esté dentro del agujero
  lengthNat : NatT ListF (K ℕ)
- lengthNat = natural length (ext {!HMap (K ℕ) !})
+ lengthNat = natural length (ext lengthNat-proof)
 
  --
  safeHead : {A : Set} → List A → Maybe A
@@ -167,28 +168,35 @@ record NatIso {a b c d}{C : Cat {a} {b}}{D : Cat {c} {d}}
 
 --------------------------------------------------
 -- composición con funtor (a izquierda y a derecha)
-
 compFNat : ∀{a b c d e f}{C : Cat {a} {b}}{D : Cat {c} {d}}{E : Cat {e} {f}}
             {F G : Fun C D}
          → (J : Fun D E)
          → (η : NatT F G) → NatT (J ○ F) (J ○ G)
-compFNat {D = D} {E} {F} {G} J η =
-               let open NatT η
+compFNat {D = D} {E} {F} {G} J n =
+               let open NatT n
                    open Cat D renaming (_∙_ to _∙D_)
                    open Cat E renaming (_∙_ to _∙E_)
                in
-               {!!}
+               natural (HMap J cmp) (λ {X}{Y}{f} -> proof
+                    (HMap J (HMap G f)) ∙E HMap J cmp 
+                    ≅⟨ sym (fcomp J) ⟩
+                    HMap J ((HMap G f) ∙D cmp)
+                    ≅⟨ cong (HMap J) nat ⟩
+                    HMap J (cmp ∙D (HMap F f))
+                    ≅⟨ fcomp J ⟩
+                    HMap J cmp ∙E (HMap J (HMap F f))
+                    ∎ )
 
 compNatF :  ∀{a b c d e f}{C : Cat {a} {b}}{D : Cat {c} {d}}{E : Cat {e} {f}}
             {J K : Fun D E}
          → (η : NatT J K)
          → (F : Fun C D)
          → NatT (J ○ F) (K ○ F)
-compNatF {C = C} {D} {E} {J} {K} η F =
-               let open NatT η
+compNatF {C = C} {D} {E} {J} {K} n F =
+               let open NatT n
                    open Cat D renaming (_∙_ to _∙D_)
                    open Cat E renaming (_∙_ to _∙E_)
-               in {!!}
+               in natural cmp nat
 
 --------------------------------------------------
 -- Composición horizontal
@@ -196,7 +204,9 @@ compHNat : ∀{a b c d e f}{C : Cat {a} {b}}{D : Cat {c} {d}}{E : Cat {e} {f}}
             {F G : Fun C D}{J K : Fun D E}
             (η : NatT F G)(ε : NatT J K)
             → NatT (J ○ F) (K ○ G)
-compHNat {G = G} {J} η ε = {!!}
+compHNat {G = G} {J} n e = let open NatT
+                           in natural (λ {X} → {!cmp n {X}!}) {!!}
+
 
 
 -- La composición horizontal es asociativa
