@@ -93,24 +93,46 @@ module Ejemplos where
 
  open Cat (Sets {lzero})
 
- --
+ concatmap-distr : {X Y : Set}{f : X -> Y}(xs ys : List X) ->
+           mapList f (xs ++ ys) ≅ mapList f xs ++ mapList f ys
+ concatmap-distr [] ys = refl
+ concatmap-distr (x ∷ xs) ys = cong₂ _∷_ refl (concatmap-distr xs ys)
+
+{- reverse-distr : {X : Set}(x : X)(xs : List X) ->
+                 reverse (x ∷ xs) ≅ reverse xs ++ (x ∷ [])
+ reverse-distr x [] = refl
+ reverse-distr x (y ∷ xs) = proof
+                             reverse (x ∷ y ∷ xs)
+                             ≅⟨ {!!} ⟩
+                             reverse xs ++ (y ∷ [] ++ x ∷ [])
+                             ≅⟨ {!!} ⟩
+                             (reverse xs ++ y ∷ []) ++ x ∷ []
+                             ≅⟨ cong₂ _++_ (sym (reverse-distr y xs)) refl ⟩
+                             reverse (y ∷ xs) ++ x ∷ []
+                             ∎
+-}
+
+--
  revNat-proof : {X Y : Set} {f : X -> Y}(a : List X) →
       mapList f (reverse a) ≅ reverse (mapList f a)
  revNat-proof [] = refl
- revNat-proof {f = f} (x ∷ xs) = {!mapList f (reverse (x ∷ xs))!}{-proof
-                      (HMap ListF f ∙ reverse) (x ∷ xs)
+ revNat-proof {f = f} (x ∷ xs) = proof
+                      mapList f (reverse (x ∷ xs))
                       ≅⟨ {!!} ⟩
-                      {!map f ((reverse xs) ++ (x ∷ []))!}
+                      mapList f ((reverse xs) ++ (x ∷ []))
+                      ≅⟨ concatmap-distr (reverse xs) (x ∷ []) ⟩
+                      (mapList f (reverse xs)) ++ mapList f (x ∷ [])
+                      ≅⟨ cong₂ _++_ (revNat-proof xs) refl ⟩
+                      reverse (mapList f xs) ++ (f x ∷ [])
                       ≅⟨ {!!} ⟩
-                      {!!}
-                      ≅⟨ {!!} ⟩
-                      (reverse ∙ HMap ListF f) (x ∷ xs)
-                      ∎-}
+                      reverse ((f x) ∷ mapList f xs)
+                      ∎
 
  revNat : NatT ListF ListF
- revNat = natural reverse {!!}
+ revNat = natural reverse (ext revNat-proof)
 
  --
+
  concatNat-proof :  {X Y : Set} {f : X -> Y} (a : List (List X)) →
       (mapList f) (concat a) ≅ concat (mapList (mapList f) a)
  concatNat-proof [] = refl
@@ -118,14 +140,13 @@ module Ejemplos where
                         mapList f (concat (x ∷ xs)) 
                         ≅⟨ cong (mapList f) refl ⟩
                         mapList f (x ++ concat xs)
-                        ≅⟨ {!!} ⟩
+                        ≅⟨ concatmap-distr x (concat xs) ⟩
                         (mapList f x) ++ mapList f (concat xs)
                         ≅⟨ cong ((_++_) (mapList f x)) (concatNat-proof xs) ⟩
                         (mapList f x) ++ concat (mapList (mapList f) xs)
                         ≅⟨ refl ⟩
                         concat (mapList f x ∷ mapList (mapList f) xs)
                         ∎
---cong₂ _++_ (cong (mapList {!!}) {!!}) {!!}
 
  concatNat : NatT (ListF ○ ListF) ListF
  concatNat = natural concat (ext concatNat-proof)
@@ -136,7 +157,6 @@ module Ejemplos where
  lengthNat-proof [] = refl
  lengthNat-proof {f = f}(x ∷ as) = cong suc (lengthNat-proof as)
 
--- C-c C-n normaliza el término que esté dentro del agujero
  lengthNat : NatT ListF (K ℕ)
  lengthNat = natural length (ext lengthNat-proof)
 
@@ -204,8 +224,10 @@ compHNat : ∀{a b c d e f}{C : Cat {a} {b}}{D : Cat {c} {d}}{E : Cat {e} {f}}
             {F G : Fun C D}{J K : Fun D E}
             (η : NatT F G)(ε : NatT J K)
             → NatT (J ○ F) (K ○ G)
-compHNat {G = G} {J} n e = let open NatT
-                           in natural (λ {X} → {!cmp n {X}!}) {!!}
+compHNat {E = E}{F}{G}{J}{K} n e = let open NatT
+                                       open Cat E renaming (_∙_ to _∙E_)
+                           in natural (λ {X} → HMap K (cmp n) ∙E cmp e) {!proof
+         !}
 
 
 
