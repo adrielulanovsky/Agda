@@ -113,6 +113,9 @@ module Ejemplos where
 -}
 
 --
+-- map f (foldl c n xs) = foldl c (map f n) (map f xs) pattern matching en xs
+-- c = λ r -> x : r
+-- 
  revNat-proof : {X Y : Set} {f : X -> Y}(a : List X) →
       mapList f (reverse a) ≅ reverse (mapList f a)
  revNat-proof [] = refl
