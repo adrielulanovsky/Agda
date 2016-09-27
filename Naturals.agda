@@ -115,7 +115,14 @@ module Ejemplos where
 --
 -- map f (foldl c n xs) = foldl c (map f n) (map f xs) pattern matching en xs
 -- c = λ r -> x : r
--- 
+--
+-- revNat-aux2 : {X Y : Set} {f : X -> Y}(x : X)(y : Y)(xs : List X) ->   mapList f (foldl (λ r -> x ∷ r) y xs) ≅ foldl (λ r -> x ∷ r) (mapList f n) (mapList f xs)
+-- revNat-aux2 = {!!}
+ 
+ revNat-aux : {X Y : Set} {f : X -> Y}(x : X)(xs : List X) -> reverse (x ∷ xs) ≅ reverse xs ++ x ∷ []
+ revNat-aux x [] = refl
+ revNat-aux x (y ∷ xs) = {!!}
+
  revNat-proof : {X Y : Set} {f : X -> Y}(a : List X) →
       mapList f (reverse a) ≅ reverse (mapList f a)
  revNat-proof [] = refl
@@ -227,10 +234,27 @@ compHNat : ∀{a b c d e f}{C : Cat {a} {b}}{D : Cat {c} {d}}{E : Cat {e} {f}}
             {F G : Fun C D}{J K : Fun D E}
             (η : NatT F G)(ε : NatT J K)
             → NatT (J ○ F) (K ○ G)
-compHNat {E = E}{F}{G}{J}{K} n e = let open NatT
-                                       open Cat E renaming (_∙_ to _∙E_)
-                           in natural (λ {X} → HMap K (cmp n) ∙E cmp e) {!proof
-         !}
+compHNat {D = D}{E}{F}{G}{J}{K} n e = let open NatT
+                                          open Cat E renaming (_∙_ to _∙E_ ; ass to assE)
+                                          open Cat D renaming (_∙_ to _∙D_ ; ass to assD)
+                        in natural (λ {X} → HMap K (cmp n) ∙E cmp e)
+                        (λ {X}{Y}{f} -> proof
+                        HMap K (HMap G f) ∙E HMap K (cmp n) ∙E cmp e
+                        ≅⟨ sym assE ⟩
+                        (HMap K (HMap G f) ∙E HMap K (cmp n)) ∙E cmp e
+                        ≅⟨ sym (cong (λ x -> x ∙E cmp e) (fcomp K)) ⟩
+                        HMap K (HMap G f ∙D cmp n) ∙E cmp e
+                        ≅⟨ cong (λ x -> HMap K x ∙E cmp e) (nat n) ⟩
+                        HMap K (cmp n ∙D HMap F f) ∙E cmp e
+                        ≅⟨ cong ((λ x -> x ∙E cmp e)) (fcomp K) ⟩
+                        (HMap K (cmp n) ∙E HMap K (HMap F f)) ∙E cmp e
+                        ≅⟨ assE ⟩
+                        HMap K (cmp n) ∙E HMap K (HMap F f) ∙E cmp e
+                        ≅⟨ cong ((_∙E_) (HMap K (cmp n))) (nat e) ⟩
+                        HMap K (cmp n) ∙E cmp e ∙E HMap J (HMap F f)
+                        ≅⟨ sym assE ⟩
+                        (HMap K (cmp n) ∙E cmp e) ∙E HMap J (HMap F f)
+                        ∎)
 
 
 
@@ -240,11 +264,19 @@ compHNat-assoc : ∀{a1 b1 a2 b2 a3 b3 a4 b4}
                     {F G : Fun C1 C2}{J K : Fun C2 C3}{L M : Fun C3 C4} 
                  →  (η1 : NatT F G)(η2 : NatT J K)(η3 : NatT L M)
                  →  compHNat (compHNat η1 η2) η3 ≅ compHNat η1 (compHNat η2 η3)
-compHNat-assoc {C3 = C3}{C4 = C4}{J = J}{L = L} (natural cmp1 _) (natural cmp2 _) (natural cmp3 _) =
+compHNat-assoc {C3 = C3}{C4 = C4}{J = J}{K}{L}{M} (natural cmp1 _) (natural cmp2 _) (natural cmp3 _) =
                    let   _∙4_ = Cat._∙_ C4
-                         _∙3_ = Cat._∙_ C3                         
+                         _∙3_ = Cat._∙_ C3
+                         ass4 = Cat.ass C4
                    in
-                     {!!}
+                     NatTEq2 (Functor-Eq refl refl) (Functor-Eq refl refl)
+                     (iext (λ X → proof
+                     (HMap M ((HMap K cmp1) ∙3 cmp2)) ∙4 cmp3
+                     ≅⟨ cong (λ x -> x ∙4 cmp3) (fcomp M) ⟩
+                     (HMap M (HMap K cmp1) ∙4 (HMap M cmp2)) ∙4 cmp3
+                     ≅⟨ ass4 ⟩
+                     (HMap M (HMap K cmp1)) ∙4 ((HMap M cmp2) ∙4 cmp3)
+                     ∎))
 
 
 -- ley de intercambio
@@ -253,11 +285,25 @@ interchange : ∀{a b c d e f}{C : Cat {a} {b}}{D : Cat {c} {d}}{E : Cat {e} {f}
               → (α : NatT F G) → (β : NatT G H)
               → (γ : NatT I J) → (δ : NatT J K)
               → compHNat (compVNat β α) (compVNat δ γ) ≅ compVNat (compHNat β δ) (compHNat α γ)
-interchange {D = D}{E}{I = I}{J} (natural α _) (natural β _) (natural γ natγ) (natural δ _) =
+interchange {D = D}{E}{I = I}{J}{K} (natural a _) (natural b _) (natural y _) (natural d natd) =
           let open NatT
               _∙D_ = Cat._∙_ D
               open Cat E
            in
-           {!!}
+           NatTEq (iext (λ X → proof
+           HMap K (b ∙D a) ∙ d ∙ y
+           ≅⟨ cong (λ x -> x ∙ d ∙ y) (fcomp K) ⟩
+           (HMap K b ∙ HMap K a) ∙ d ∙ y
+           ≅⟨ sym ass ⟩
+           ((HMap K b ∙ HMap K a) ∙ d) ∙ y
+           ≅⟨ cong (λ x -> x ∙ y) ass ⟩
+           (HMap K b ∙ (HMap K a ∙ d)) ∙ y
+           ≅⟨ cong (λ x -> (HMap K b ∙ x) ∙ y) natd ⟩
+           (HMap K b ∙ (d ∙ HMap J a)) ∙ y
+           ≅⟨ cong ((λ x -> x ∙ y)) (sym ass) ⟩
+           ((HMap K b ∙ d) ∙ HMap J a) ∙ y
+           ≅⟨ ass ⟩
+           (HMap K b ∙ d) ∙ HMap J a ∙ y
+           ∎))
 
 
