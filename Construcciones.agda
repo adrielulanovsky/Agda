@@ -64,15 +64,34 @@ module ProductIso {a}{b}(C : Cat {a}{b}) where
   open Cat C
 
   open Products
-
   ProductIso : ∀{A B} → (p q : Products C)
            → Iso C (⟨_,_⟩ p {A} {B} (π₁ q) (π₂ q))
   ProductIso p q = iso (⟨_,_⟩ q (π₁ p) (π₂ p)) 
-                       {!proof
+                       (proof
                        ⟨ p , π₁ q ⟩ (π₂ q) ∙ ⟨ q , π₁ p ⟩ (π₂ p) 
-                       ≅⟨ ? ⟩
+                       ≅⟨ law3 p
+           (proof
+           π₁ p ∙ ⟨ p , π₁ q ⟩ (π₂ q) ∙ ⟨ q , π₁ p ⟩ (π₂ p)
+           ≅⟨ sym ass ⟩
+           (π₁ p ∙ ⟨ p , π₁ q ⟩ (π₂ q)) ∙ ⟨ q , π₁ p ⟩ (π₂ p)
+           ≅⟨ cong (λ x -> x ∙ ⟨ q , π₁ p ⟩ (π₂ p) ) (law1 p) ⟩
+           π₁ q ∙ ⟨ q , π₁ p ⟩ (π₂ p)
+           ≅⟨ law1 q ⟩
+           π₁ p
+           ∎)
+           (proof
+           π₂ p ∙ ⟨ p , π₁ q ⟩ (π₂ q) ∙ ⟨ q , π₁ p ⟩ (π₂ p)
+           ≅⟨ sym ass ⟩
+           (π₂ p ∙ ⟨ p , π₁ q ⟩ (π₂ q)) ∙ ⟨ q , π₁ p ⟩ (π₂ p)
+           ≅⟨ cong (λ x -> x ∙ ⟨ q , π₁ p ⟩ (π₂ p) ) (law2 p) ⟩
+           π₂ q ∙ ⟨ q , π₁ p ⟩ (π₂ p)
+           ≅⟨ law2 q ⟩
+           π₂ p
+           ∎) ⟩
+                       ⟨ p , π₁ p ⟩ (π₂ p)
+                       ≅⟨ sym (law3 p idr idr) ⟩
                        iden
-                       ∎!} 
+                       ∎) 
                        {!!}
 
 module ProductMorphisms {a}{b}{C : Cat {a}{b}}(p : Products C) where
