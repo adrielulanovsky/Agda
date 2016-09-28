@@ -82,5 +82,8 @@ isoEq C {f = f} p q = let open Cat C in
 --------------------------------------------------
 {- Un isormofismo en (C : Cat) es un isomorfismo en (C Op). -}
 
-iso-op : ∀{a b}{C : Cat {a} {b}}{A B}{f : Cat.Hom C A B} →  Iso C f → Iso (C Op) f
+iso-op : ∀{a b}{C : Cat {a} {b}}{A B}{f : Cat.Hom C A B} →  Iso (C Op) f → Iso C f
 iso-op (iso inv law1 law2) = iso inv law2 law1
+
+iso-op' : ∀{a b}{C : Cat {a} {b}}{A B}{f : Cat.Hom C A B} →  Iso C f → Iso (C Op) f
+iso-op' (iso inv law1 law2) = iso inv law2 law1
