@@ -119,24 +119,39 @@ module Ejemplos where
 -- revNat-aux2 : {X Y : Set} {f : X -> Y}(x : X)(y : Y)(xs : List X) ->   mapList f (foldl (λ r -> x ∷ r) y xs) ≅ foldl (λ r -> x ∷ r) (mapList f n) (mapList f xs)
 -- revNat-aux2 = {!!}
  
- revNat-aux : {X Y : Set} {f : X -> Y}(x : X)(xs : List X) -> reverse (x ∷ xs) ≅ reverse xs ++ x ∷ []
+ revNat-aux : {X : Set}(x : X)(xs : List X) -> reverse (x ∷ xs) ≅ reverse xs ++ x ∷ []
  revNat-aux x [] = refl
- revNat-aux x (y ∷ xs) = {!!}
+ revNat-aux x (y ∷ xs) = proof
+                          reverse (x ∷ y ∷ xs)
+                         ≅⟨ {!!} ⟩
+                          reverse xs ++ reverse (x ∷ y ∷ [])
+                         ≅⟨ refl ⟩
+                         reverse xs ++ y ∷ [] ++ x ∷ []
+                         ≅⟨ {!!} ⟩
+                          (reverse xs ++ y ∷ []) ++ x ∷ []
+                         ≅⟨ cong₂ _++_ (sym (revNat-aux y xs)) refl ⟩
+                          reverse (y ∷ xs) ++ x ∷ []
+                         ∎
+
+ --map f (foldl snoc xs ys)  = foldl snoc (mapList f xs) (mapList f ys)
 
  revNat-proof : {X Y : Set} {f : X -> Y}(a : List X) →
       mapList f (reverse a) ≅ reverse (mapList f a)
  revNat-proof [] = refl
- revNat-proof {f = f} (x ∷ xs) = proof
+ revNat-proof {f = f} (x ∷ xs) = {!!} 
+            {-
+                      proof
                       mapList f (reverse (x ∷ xs))
-                      ≅⟨ {!!} ⟩
+                      ≅⟨ cong (mapList f) (revNat-aux x xs) ⟩
                       mapList f ((reverse xs) ++ (x ∷ []))
                       ≅⟨ concatmap-distr (reverse xs) (x ∷ []) ⟩
                       (mapList f (reverse xs)) ++ mapList f (x ∷ [])
                       ≅⟨ cong₂ _++_ (revNat-proof xs) refl ⟩
                       reverse (mapList f xs) ++ (f x ∷ [])
-                      ≅⟨ {!!} ⟩
+                      ≅⟨ sym (revNat-aux (f x) (mapList f xs)) ⟩
                       reverse ((f x) ∷ mapList f xs)
                       ∎
+               -}
 
  revNat : NatT ListF ListF
  revNat = natural reverse (ext revNat-proof)
