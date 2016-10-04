@@ -125,7 +125,14 @@ module CoproductMorphisms {a}{b}{C : Cat {a}{b}}{cp : Coproducts C} where
               ∎
 
    {- Probar que _+_ junto con plus definen unFunctor C ×C C → C -}
-
+module plusFunctor {a}{b}(C : Cat {a}{b})(cp : Coproducts C) where
+  open import Categories.ProductCat
+  open import Functors
+  open Coproducts cp
+  open CoproductMorphisms {C = C}{cp}
+  
+  sumIsFunctor : Fun (C ×C C) C
+  sumIsFunctor = functor (λ { (A , B) → A + B }) (λ { (f , g) → plus f g }) idplus (λ {X}{Y}{Z}{f}{g} -> idcomp (fst f) (fst g) (snd f) (snd g))
 
 module Intercambio {a}{b}{C : Cat {a}{b}}{cp : Coproducts C}{p : Products C} where
 
@@ -142,12 +149,58 @@ module Intercambio {a}{b}{C : Cat {a}{b}}{cp : Coproducts C}{p : Products C} whe
          → ⟨ [ f , g ] , [ h , k ] ⟩ ≅ [ ⟨ f , h ⟩ , ⟨ g , k ⟩ ]
   intercambio f g h i = proof
                          ⟨ [ f , g ] , [ h , i ] ⟩
-                        ≅⟨ sym (lawp3 {!!} {!!}) ⟩
-                         {!!}
-                        ≅⟨ {!!} ⟩
-                         {!!}
-                        ≅⟨ {!!} ⟩
-                         {!!}
-                        ≅⟨ law3 {!!} {!!} ⟩
+                        ≅⟨ law3
+                (proof
+                ⟨ [ f , g ] , [ h , i ] ⟩ ∙ inl
+        ≅⟨ lawp3
+        (proof
+        π₁ ∙ ⟨ [ f , g ] , [ h , i ] ⟩ ∙ inl
+        ≅⟨ sym ass ⟩
+        (π₁ ∙ ⟨ [ f , g ] , [ h , i ] ⟩) ∙ inl
+        ≅⟨ congl lawp1 ⟩
+        [ f , g ] ∙ inl
+        ≅⟨ law1 ⟩
+        f
+        ∎)
+        
+        (proof
+        π₂ ∙ ⟨ [ f , g ] , [ h , i ] ⟩ ∙ inl
+        ≅⟨ sym ass ⟩
+        (π₂ ∙ ⟨ [ f , g ] , [ h , i ] ⟩) ∙ inl
+        ≅⟨ congl lawp2 ⟩
+        [ h , i ] ∙ inl
+        ≅⟨ law1 ⟩
+        h
+        ∎ )
+                ⟩
+                ⟨ f , h ⟩
+                ∎)
+
+                (proof
+                ⟨ [ f , g ] , [ h , i ] ⟩ ∙ inr
+                ≅⟨ lawp3
+        (proof
+        π₁ ∙ ⟨ [ f , g ] , [ h , i ] ⟩ ∙ inr
+        ≅⟨ sym ass ⟩
+        (π₁ ∙ ⟨ [ f , g ] , [ h , i ] ⟩) ∙ inr
+        ≅⟨ congl lawp1 ⟩
+        [ f , g ] ∙ inr
+        ≅⟨ law2 ⟩
+        g
+        ∎ )
+        
+        (proof
+        π₂ ∙ ⟨ [ f , g ] , [ h , i ] ⟩ ∙ inr
+        ≅⟨ sym ass ⟩
+        (π₂ ∙ ⟨ [ f , g ] , [ h , i ] ⟩) ∙ inr
+        ≅⟨ congl lawp2 ⟩
+        [ h , i ] ∙ inr
+        ≅⟨ law2 ⟩
+        i
+        ∎ )
+                ⟩
+                ⟨ g , i ⟩
+                ∎)
+                        ⟩
                          [ ⟨ f , h ⟩ , ⟨ g , i ⟩ ]
                         ∎
