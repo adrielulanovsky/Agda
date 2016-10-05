@@ -19,14 +19,10 @@ module SetsStructure {l : Level} where
 
  {- Probar que la categoría Sets tiene objeto inicial y coproductos -}
  ZeroSet : Initial Sets ⊥
- ZeroSet = init (λ { () }) (ext (λ{ () }))
+ ZeroSet = {!!}
 
- data Either {a b}(A : Set a)(B : Set b) : Set (a ⊔ b) where
-   left : A -> Either A B
-   right : B -> Either A B
- 
  SetsHasCoproducts : ∀{l} → Coproducts (Sets {l})
- SetsHasCoproducts = coproduct (λ A B → Either A B) left right (λ f g → λ {(left x) → f x ; (right x) -> g x}) refl refl (λ p q → ext (λ { (left x) → cong-app p x ; (right x) → cong-app q x }))
+ SetsHasCoproducts = {!!}
 
 --------------------------------------------------
 module InitialIso {a}{b}(C : Cat {a}{b}) where
@@ -38,17 +34,16 @@ module InitialIso {a}{b}(C : Cat {a}{b}) where
 
  init-iden : (I : Obj){init : Initial C I}
            → i init {I} ≅ iden {I}
- init-iden I {initial} = law initial
+ init-iden I = {!!}
 
 
 --------------------------------------------------
  {- Probar que un objeto terminal es inicial en la categoría dual y viceversa -}
- open Terminal renaming (law to lawt)
  TerminalInitialDuality : {X : Obj} → Terminal C X → Initial (C Op) X
- TerminalInitialDuality terminal = init (t terminal) (lawt terminal)
+ TerminalInitialDuality = {!!}
 
  InitialTerminalDuality : {X : Obj} → Initial C X → Terminal (C Op) X
- InitialTerminalDuality initial = term (i initial) (law initial)
+ InitialTerminalDuality = {!!}
 
 --------------------------------------------------
 
@@ -59,21 +54,19 @@ module InitialIso {a}{b}(C : Cat {a}{b}) where
             → (p : Initial C I)
             → (q : Initial C I')
             → Iso C (i p {I'})
- InitialIso I I' p q = iso-op (TerminalIso (C Op) I I' (InitialTerminalDuality p) (InitialTerminalDuality q))
+ InitialIso I I' p q = {!!}
 
 --------------------------------------------------------
 -- Probar que los coproductos son productos en la categoría dual
 ProductCoproductDuality : ∀{a}{b}{C : Cat {a}{b}}
                         → Products C
                         → Coproducts (C Op)
-ProductCoproductDuality (prod _×_ π₁ π₂ ⟨_,_⟩ law1 law2 law3) = 
-                   coproduct (λ A B → A × B) π₁ π₂ ⟨_,_⟩ law1 law2 law3 
+ProductCoproductDuality = {!!}
 
 CoproductProductDuality : ∀{a}{b}{C : Cat {a}{b}}
                         → Coproducts C
                         → Products (C Op)
-CoproductProductDuality (coproduct _+_ inl inr [_,_] law1 law2 law3) = 
-                                   prod _+_ inl inr [_,_] law1 law2 law3
+CoproductProductDuality = {!!}
 
 --------------------------------------------------
 module CoproductIso {a}{b}(C : Cat {a}{b})  where
@@ -86,7 +79,7 @@ module CoproductIso {a}{b}(C : Cat {a}{b})  where
 
   {- Probar que los coproductos son únicos hasta un isomorfismo *usando dualidad* -}
   CoproductIso : ∀{A B}(X Y : Coproducts C) → Iso C ([_,_] X {A} {B} (inl Y) (inr Y))
-  CoproductIso X Y = iso-op (piso (CoproductProductDuality X) (CoproductProductDuality Y))
+  CoproductIso X Y = {!!}
 
 --------------------------------------------------
 
@@ -97,42 +90,21 @@ module CoproductMorphisms {a}{b}{C : Cat {a}{b}}{cp : Coproducts C} where
 
   {- Definir el siguiente morfismo -}
   plus : ∀{A B C D}(f : Hom A B)(g : Hom C D) → Hom (A + C) (B + D)
-  plus f g = [ inl ∙ f , inr ∙ g ]
+  plus f g = {!!}
 
   {- Probar las siguentes propiedades -}
 
   idplus : ∀{A B} → plus (iden {A}) (iden {B}) ≅ iden {A + B}
-  idplus = sym (law3 (trans idl (sym idr)) (trans idl (sym idr)))
+  idplus = {!!}
 
   idcomp :  ∀{A B C D E F}
          → (f : Hom B C)(g : Hom A B)
          → (h : Hom E F)(i : Hom D E)
          → plus (f ∙ g) (h ∙ i) ≅ plus f h ∙ plus g i
-  idcomp  f g h i = proof
-              plus (f ∙ g) (h ∙ i)
-              ≅⟨ cong₂ [_,_] (sym ass) (sym ass) ⟩
-              [ (inl ∙ f) ∙ g , (inr ∙ h) ∙ i ]
-              ≅⟨ cong₂ (λ x y → [ x ∙ g , y ∙ i ]) (sym law1) (sym law2)  ⟩
-              [ ((plus f h) ∙ inl) ∙ g , ((plus f h) ∙ inr) ∙ i ]
-              ≅⟨ cong₂ [_,_] ass ass ⟩
-              [ (plus f h) ∙ (inl ∙ g) , (plus f h) ∙ (inr ∙ i) ]
-              ≅⟨ cong₂ (λ x y → [ (plus f h) ∙ x , (plus f h) ∙ y ]) (sym law1) (sym law2) ⟩
-              [ (plus f h) ∙ (plus g i) ∙ inl , (plus f h) ∙ (plus g i) ∙ inr ]
-              ≅⟨ cong₂ [_,_] (sym ass) (sym ass) ⟩
-              [ ((plus f h) ∙ (plus g i)) ∙ inl , ((plus f h) ∙ (plus g i)) ∙ inr ]
-              ≅⟨ sym (law3 refl refl) ⟩
-              plus f h ∙ plus g i
-              ∎
+  idcomp  f g h i = {!!}
 
    {- Probar que _+_ junto con plus definen unFunctor C ×C C → C -}
-module plusFunctor {a}{b}(C : Cat {a}{b})(cp : Coproducts C) where
-  open import Categories.ProductCat
-  open import Functors
-  open Coproducts cp
-  open CoproductMorphisms {C = C}{cp}
-  
-  sumIsFunctor : Fun (C ×C C) C
-  sumIsFunctor = functor (λ { (A , B) → A + B }) (λ { (f , g) → plus f g }) idplus (λ {X}{Y}{Z}{f}{g} -> idcomp (fst f) (fst g) (snd f) (snd g))
+
 
 module Intercambio {a}{b}{C : Cat {a}{b}}{cp : Coproducts C}{p : Products C} where
 
@@ -147,60 +119,5 @@ module Intercambio {a}{b}{C : Cat {a}{b}}{cp : Coproducts C}{p : Products C} whe
          → (f : Hom A C)(g : Hom B C)
          → (h : Hom A D)(k : Hom B D)
          → ⟨ [ f , g ] , [ h , k ] ⟩ ≅ [ ⟨ f , h ⟩ , ⟨ g , k ⟩ ]
-  intercambio f g h i = proof
-                         ⟨ [ f , g ] , [ h , i ] ⟩
-                        ≅⟨ law3
-                (proof
-                ⟨ [ f , g ] , [ h , i ] ⟩ ∙ inl
-        ≅⟨ lawp3
-        (proof
-        π₁ ∙ ⟨ [ f , g ] , [ h , i ] ⟩ ∙ inl
-        ≅⟨ sym ass ⟩
-        (π₁ ∙ ⟨ [ f , g ] , [ h , i ] ⟩) ∙ inl
-        ≅⟨ congl lawp1 ⟩
-        [ f , g ] ∙ inl
-        ≅⟨ law1 ⟩
-        f
-        ∎)
-        
-        (proof
-        π₂ ∙ ⟨ [ f , g ] , [ h , i ] ⟩ ∙ inl
-        ≅⟨ sym ass ⟩
-        (π₂ ∙ ⟨ [ f , g ] , [ h , i ] ⟩) ∙ inl
-        ≅⟨ congl lawp2 ⟩
-        [ h , i ] ∙ inl
-        ≅⟨ law1 ⟩
-        h
-        ∎ )
-                ⟩
-                ⟨ f , h ⟩
-                ∎)
+  intercambio f g h i = {!!}
 
-                (proof
-                ⟨ [ f , g ] , [ h , i ] ⟩ ∙ inr
-                ≅⟨ lawp3
-        (proof
-        π₁ ∙ ⟨ [ f , g ] , [ h , i ] ⟩ ∙ inr
-        ≅⟨ sym ass ⟩
-        (π₁ ∙ ⟨ [ f , g ] , [ h , i ] ⟩) ∙ inr
-        ≅⟨ congl lawp1 ⟩
-        [ f , g ] ∙ inr
-        ≅⟨ law2 ⟩
-        g
-        ∎ )
-        
-        (proof
-        π₂ ∙ ⟨ [ f , g ] , [ h , i ] ⟩ ∙ inr
-        ≅⟨ sym ass ⟩
-        (π₂ ∙ ⟨ [ f , g ] , [ h , i ] ⟩) ∙ inr
-        ≅⟨ congl lawp2 ⟩
-        [ h , i ] ∙ inr
-        ≅⟨ law2 ⟩
-        i
-        ∎ )
-                ⟩
-                ⟨ g , i ⟩
-                ∎)
-                        ⟩
-                         [ ⟨ f , h ⟩ , ⟨ g , i ⟩ ]
-                        ∎
