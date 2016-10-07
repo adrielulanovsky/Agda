@@ -60,6 +60,12 @@ homomorphismEq : {x y : F-algebra}
 homomorphismEq {h = homo homo-base homo-prop} {homo .homo-base homo-prop₁} refl =
                                 cong (homo homo-base) (ir homo-prop homo-prop₁)
 
+-- si son iguales, sus bases son iguales
+homomorphismCong : {x y : F-algebra}
+              → {h k : (F-homomorphism) x y}
+              → h ≅ k
+              → homo-base h ≅ homo-base k  
+homomorphismCong refl = refl
 --------------------------------------------------
 {- La identidad es un homomorfismo -}
 
@@ -98,15 +104,6 @@ comp-homo {x}{y}{z}(homo h p) (homo k q) = homo (h ∙ k)
                              algebra z ∙ HMap (h ∙ k)
                              ∎)
 
-{-
-baseHomo : ∀{x y z} {f : F-homomorphism y z} {g : F-homomorphism x y} -> 
-                     homo-base (comp-homo f g) ≅ (homo-base f) ∙ homo-base g
-baseHomo {f = f} {g} = proof
-   homo-base (comp-homo f g)
-   ≅⟨ refl ⟩
-   homo-base f ∙ homo-base g
-   ∎
--}
 --------------------------------------------------
 {- Con todo lo anterior podemos definir la categoría de
    F-Algebras.
@@ -162,44 +159,28 @@ open import Categories.Iso
 lemma : comp-homo α-homo init-homo ≅ iden-homo {inF}
 lemma = proof
    comp-homo α-homo init-homo
-   ≅⟨ {!!} ⟩
+   ≅⟨ sym (univ {f = comp-homo α-homo init-homo}) ⟩
    init-homo
    ≅⟨ univ {f = iden-homo} ⟩
    iden-homo
    ∎
-
-{-
-homomorphismEq (proof
-   homo-base (comp-homo α-homo init-homo)
-   ≅⟨ {!univ {f = iden-homo}!} ⟩
-   {!!}
-   ≅⟨ {!!} ⟩
-   {!!}
-   ≅⟨ {!!} ⟩
-   {!!}
-   ≅⟨ {!univ!} ⟩
-   homo-base iden-homo
+   
+lemma2 : comp-homo (init-homo {mapF inF}) α-homo ≅ iden-homo {mapF inF}
+lemma2 = homomorphismEq (proof
+   homo-base (comp-homo init-homo α-homo)
+   ≅⟨ homo-prop (init-homo {mapF inF}) ⟩
+   HMap (homo-base α-homo) ∙ HMap (homo-base init-homo)
+   ≅⟨ sym fcomp ⟩
+   HMap (homo-base (comp-homo α-homo init-homo))
+   ≅⟨ cong HMap (homomorphismCong lemma) ⟩
+   HMap iden
+   ≅⟨ fid ⟩
+   iden {carrier (mapF inF)}
+   ≅⟨ refl ⟩
+   homo-base (iden-homo {mapF inF})
    ∎)
--}
+
 L : Iso F-AlgebraCat α-homo
-L = {!!}
-
-
-{-
-
-
-proof
-   ?
-   ≅⟨ ? ⟩
-   ?
-   ≅⟨ ? ⟩
-   ?
-   ≅⟨ ? ⟩
-   ?
-   ≅⟨ ? ⟩
-   ?
-   ∎
-
-
-
--}
+L = iso init-homo
+        lemma
+        lemma2

@@ -41,7 +41,7 @@ module Nat where
 
   -- definir constructores
   0N : μF
-  0N = {!!}
+  0N = {!OMap ⊥!}
 
   sucN : μF → μF
   sucN x = {!!}
