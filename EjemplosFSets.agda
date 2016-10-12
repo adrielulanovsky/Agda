@@ -41,19 +41,49 @@ module Nat where
 
   -- definir constructores
   0N : μF
-  0N = {!OMap ⊥!}
+  0N = (α ∘ inl) ⊤.tt
+
+  0N2 : ⊤ -> μF
+  0N2 x = 0N
 
   sucN : μF → μF
-  sucN x = {!!}
-
+  sucN x = (α ∘ inr) x
 
 {- Probar que el portador de la semántica de algebra inicial
   de OnePlus es igual a ℕ
--}
 
-   
-  lemaNat : Iso Sets (fold {!!})
-  lemaNat = {!!}
+Nota: quiero probar que μF es isomorfo a ℕ
+-}
+  Natμ : ℕ -> μF
+  Natμ zero = 0N
+  Natμ (suc x) = sucN (Natμ x)
+ 
+  FNat-Nat : (OMap ℕ) -> ℕ
+  FNat-Nat (Inl x) = 0
+  FNat-Nat (Inr x) = suc x
+  
+  lemmaNat1 : (x : ℕ) -> ((fold FNat-Nat) ∘ Natμ) x ≅ x
+  lemmaNat1 = {!!}
+
+  lemmaNat2 : Natμ ∘ (fold FNat-Nat) ≅ id
+  lemmaNat2 = proof
+                                 Natμ ∘ (fold FNat-Nat)
+                                 ≅⟨ {!!} ⟩
+                                 {!!}
+                                 ≅⟨ {!!} ⟩
+                                 homo-base init-homo
+                                 ≅⟨ cong homo-base (univ {f = iden-homo}) ⟩
+                                 homo-base (iden-homo {inF})
+                                 ≅⟨ refl ⟩
+                                 id
+                                 ∎
+
+  --intentar probar que [zero, suc] es un f-algebra inicial  
+
+  lemaNat : Iso Sets (fold FNat-Nat)
+  lemaNat = iso Natμ 
+                {!!} 
+                {!!}
 
 --------------------------------------------------
 {- Definir un functor cuya algebra inicial sea las listas.
@@ -85,3 +115,15 @@ module Listas (A : Set) where
   length : μF → ℕ
   length = {!!}
 
+{-
+proof
+                                 ?
+                                 ≅⟨ ? ⟩
+                                 ?
+                                 ≅⟨ ? ⟩
+                                 ?
+                                 ≅⟨ ? ⟩
+                                 ?
+                                 ∎
+
+-}
