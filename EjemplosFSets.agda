@@ -38,10 +38,16 @@ module Nat where
   open F-homomorphism
   open F-algebra
 
-
+  --demuestro que ⊤ es un álgebra:
+  ZeroAlgebra : F-algebra
+  ZeroAlgebra = falgebra ⊤ (λ { (Inl ⊤.tt) → ⊤.tt ; (Inr x) → x })
+  --demuestro que es álgebra inicial:
+  ZeroInit : Initial F-AlgebraCat ZeroAlgebra
+  ZeroInit = init (λ {X} -> {!α-homo!}) {!!}
+  
   -- definir constructores
-  0N : μF
-  0N = {!OMap ⊥!}
+  0N : {X : Set} -> μF
+  0N = λ {X} → {!!}
 
   sucN : μF → μF
   sucN x = {!!}
@@ -83,5 +89,5 @@ module Listas (A : Set) where
 -}
 
   length : μF → ℕ
-  length = {!!}
+  length x = {!!}
 
