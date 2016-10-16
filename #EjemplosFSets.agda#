@@ -164,7 +164,7 @@ Nota: quiero probar que μF es isomorfo a ℕ
 -}
 
 L : (A : Set) → Fun Sets Sets
-L A = (K ⊤) +F ({!IdF!} ×F {!!})
+L A = (K ⊤) +F (IdF ×F {!!})
 module Listas (A : Set) where
 
   open Fun (L A)
