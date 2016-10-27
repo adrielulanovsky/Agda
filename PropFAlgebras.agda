@@ -131,25 +131,50 @@ module ProductProperties (prod : Products C) where
        → f ∙ α ≅ h ∙ HMap ⟨ f , g ⟩
        → g ∙ α ≅ k ∙ HMap ⟨ f , g ⟩
        → ⟨ f , g ⟩ ≅ fold ⟨ h , k ⟩
- mutua1 = {!!}
+ mutua1 {f = f}{g}{h}{k} p q = sym (fold-caract (proof
+    ⟨ f , g ⟩ ∙ α
+    ≅⟨ fusionP ⟩
+    ⟨ f ∙ α , g ∙ α ⟩
+    ≅⟨ cong₂ ⟨_,_⟩ p q ⟩
+    ⟨ h ∙ HMap ⟨ f , g ⟩ , k ∙ HMap ⟨ f , g ⟩ ⟩
+    ≅⟨ sym fusionP ⟩
+    ⟨ h , k ⟩ ∙ HMap ⟨ f , g ⟩
+    ∎))
 
  mutua2 : ∀{A B}{f : Hom μF A}{g : Hom μF B}{h : Hom (OMap (A × B)) A}{k : Hom (OMap (A × B)) B} 
        → ⟨ f , g ⟩ ≅ fold ⟨ h , k ⟩
        → Library._×_ (f ∙ α ≅ h ∙ HMap ⟨ f , g ⟩) (g ∙ α ≅ k ∙ HMap ⟨ f , g ⟩)
- mutua2 = {!!}
-
-
-
-{-
-proof
-    ?
-    ≅⟨ ? ⟩
-    ?
-    ≅⟨ ? ⟩
-    ?
-    ≅⟨ ? ⟩
-    ?
-    ≅⟨ ? ⟩
-    ?
-    ∎
-    -}
+ mutua2 {f = f}{g}{h}{k} p = (proof
+    f ∙ α
+    ≅⟨ sym law1 ⟩
+    π₁ ∙ ⟨ f ∙ α , g ∙ α ⟩
+    ≅⟨ congr (sym fusionP) ⟩
+    π₁ ∙ ⟨ f , g ⟩ ∙ α
+    ≅⟨ congr (congl p) ⟩
+    π₁ ∙ fold ⟨ h , k ⟩ ∙ α
+    ≅⟨ congr fold-conmute ⟩
+    π₁ ∙ ⟨ h , k ⟩ ∙ HMap (fold ⟨ h , k ⟩)
+    ≅⟨ sym ass ⟩
+    (π₁ ∙ ⟨ h , k ⟩) ∙ HMap (fold ⟨ h , k ⟩)
+    ≅⟨ congl law1 ⟩
+    h ∙ HMap (fold ⟨ h , k ⟩)
+    ≅⟨ congr (cong HMap (sym p)) ⟩
+    h ∙ HMap ⟨ f , g ⟩
+    ∎) ,
+    (proof
+    g ∙ α
+    ≅⟨ sym law2 ⟩
+    π₂ ∙ ⟨ f ∙ α , g ∙ α ⟩
+    ≅⟨ congr (sym fusionP) ⟩
+    π₂ ∙ ⟨ f , g ⟩ ∙ α
+    ≅⟨ congr (congl p) ⟩
+    π₂ ∙ fold ⟨ h , k ⟩ ∙ α
+    ≅⟨ congr fold-conmute ⟩
+    π₂ ∙ ⟨ h , k ⟩ ∙ HMap (fold ⟨ h , k ⟩)
+    ≅⟨ sym ass ⟩
+    (π₂ ∙ ⟨ h , k ⟩) ∙ HMap (fold ⟨ h , k ⟩)
+    ≅⟨ congl law2 ⟩
+    k ∙ HMap (fold ⟨ h , k ⟩)
+    ≅⟨ congr (cong HMap (sym p)) ⟩
+    k ∙ HMap ⟨ f , g ⟩
+    ∎)
