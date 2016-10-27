@@ -42,7 +42,7 @@ Slice₁-eq : ∀{a b}{C : Cat {a} {b}}{I : Cat.Obj C}{X Y : Slice₀ C I}
           → baseHom f ≅ baseHom g
           → f ≅ g
 Slice₁-eq {f = baseHom , prop} {.baseHom , prop₁} refl =
-         cong (_,_ baseHom) (pir prop prop₁)
+         cong (_,_ baseHom) (ir prop prop₁)
 
 {- la composición es simplemente pegar triángulos -}
 Slice-comp : ∀{a b}{C : Cat {a} {b}}{I : Cat.Obj C}

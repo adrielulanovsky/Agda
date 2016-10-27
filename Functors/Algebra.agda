@@ -23,7 +23,7 @@ record F-algebra : Set (a ⊔ b) where
       carrier : Obj
       algebra : Hom (OMap carrier) carrier 
 
-open F-algebra public
+open F-algebra
 
 
 --------------------------------------------------
@@ -60,25 +60,22 @@ homomorphismEq : {x y : F-algebra}
 homomorphismEq {h = homo homo-base homo-prop} {homo .homo-base homo-prop₁} refl =
                                 cong (homo homo-base) (ir homo-prop homo-prop₁)
 
--- si son iguales, sus bases son iguales
-homomorphismCong : {x y : F-algebra}
-              → {h k : (F-homomorphism) x y}
-              → h ≅ k
-              → homo-base h ≅ homo-base k  
-homomorphismCong refl = refl
 --------------------------------------------------
 {- La identidad es un homomorfismo -}
 
 iden-homo : {h : F-algebra} → (F-homomorphism) h h
-iden-homo {h} = homo iden (proof
-                           iden ∙ algebra h
-                           ≅⟨ idl ⟩
-                           algebra h
-                           ≅⟨ sym idr ⟩
-                           algebra h ∙ iden
-                           ≅⟨ sym (congr fid) ⟩
-                           algebra h ∙ HMap iden
-                           ∎)
+iden-homo {h} = record {
+                   homo-base = iden;
+                   homo-prop = proof
+                    iden ∙ algebra h
+                    ≅⟨ idl ⟩
+                    algebra h
+                    ≅⟨ sym idr ⟩
+                    algebra h ∙ iden
+                    ≅⟨ congr (sym fid) ⟩
+                    algebra h ∙ HMap iden
+                    ∎
+ }
 
 --------------------------------------------------
 {- La composición de homomorfismo es un homomorfismo -}
@@ -87,22 +84,24 @@ comp-homo : {x y z : F-algebra}
              → (F-homomorphism) y z
              → (F-homomorphism) x y
              → (F-homomorphism) x z
-comp-homo {x}{y}{z}(homo h p) (homo k q) = homo (h ∙ k) 
-                                                (proof
-                             (h ∙ k) ∙ algebra x
-                             ≅⟨ ass ⟩
-                             h ∙ k ∙ algebra x
-                             ≅⟨ congr q ⟩
-                             h ∙ algebra y ∙ HMap k
-                             ≅⟨ sym ass ⟩
-                             (h ∙ algebra y) ∙ HMap k
-                             ≅⟨ congl p ⟩
-                             (algebra z ∙ HMap h) ∙ HMap k
-                             ≅⟨ ass ⟩
-                             algebra z ∙ HMap h ∙ HMap k
-                             ≅⟨ congr (sym fcomp) ⟩
-                             algebra z ∙ HMap (h ∙ k)
-                             ∎)
+comp-homo {x}{y}{z} h k =
+                 record {
+                   homo-base = homo-base h ∙ homo-base k ;
+                   homo-prop = proof
+                    (homo-base h ∙ homo-base k) ∙ algebra x
+                    ≅⟨ ass ⟩
+                    homo-base h ∙ (homo-base k ∙ algebra x)
+                    ≅⟨ congr (homo-prop k) ⟩
+                    homo-base h ∙ (algebra y ∙ HMap (homo-base k))
+                    ≅⟨ sym ass ⟩
+                    (homo-base h ∙ algebra y) ∙ HMap (homo-base k)
+                    ≅⟨ congl (homo-prop h) ⟩
+                    (algebra z ∙ HMap (homo-base h)) ∙ HMap (homo-base k)
+                    ≅⟨ ass ⟩
+                    algebra z ∙ (HMap (homo-base h) ∙ HMap (homo-base k))
+                    ≅⟨ congr (sym fcomp) ⟩                    
+                     algebra z ∙ HMap (homo-base h ∙ homo-base k)
+                  ∎ } 
 
 --------------------------------------------------
 {- Con todo lo anterior podemos definir la categoría de
@@ -125,7 +124,19 @@ F-AlgebraCat = record
    es un algebra <FX, _> -}
 
 mapF : F-algebra → F-algebra
-mapF (falgebra x h) = falgebra (OMap x) (HMap h)
+mapF (falgebra carrier algebra) = falgebra (OMap carrier) (HMap algebra)
+
+--------------------------------------------------
+{- Tenemos un funtor que se olvida de la estructura y
+   nos devuelve sólo el portador de las algebras y el morfismo base
+-}
+   
+ForgetfulAlgebra : Fun (F-AlgebraCat) C
+ForgetfulAlgebra = record{ OMap = carrier
+                      ; HMap = homo-base
+                      ; fid = refl
+                      ; fcomp = refl}
+
 
 --------------------------------------------------
 
@@ -142,9 +153,8 @@ postulate F-initiality : Initial F-AlgebraCat inF
 open Initial F-initiality renaming (i to init-homo ; law to univ) public
 open F-algebra inF renaming (carrier to μF ; algebra to α) public
 
-{- El fold se obtiene (en forma genérica) usando algebras iniciales -}
 fold : ∀{X : Obj} → (f : Hom (OMap X) X) → Hom μF X 
-fold {X} f = homo-base (init-homo { falgebra X f })
+fold {X} f = homo-base (init-homo {falgebra X f})
 
 {- El algebra inicial es un homomorfismo -}
 α-homo : F-homomorphism (mapF inF) inF
@@ -156,31 +166,28 @@ fold {X} f = homo-base (init-homo { falgebra X f })
 
 open import Categories.Iso
 
-lemma : comp-homo α-homo init-homo ≅ iden-homo {inF}
-lemma = proof
-   comp-homo α-homo init-homo
-   ≅⟨ sym (univ {f = comp-homo α-homo init-homo}) ⟩
-   init-homo
-   ≅⟨ univ {f = iden-homo} ⟩
-   iden-homo
-   ∎
-   
-lemma2 : comp-homo (init-homo {mapF inF}) α-homo ≅ iden-homo {mapF inF}
-lemma2 = homomorphismEq (proof
-   homo-base (comp-homo init-homo α-homo)
-   ≅⟨ homo-prop (init-homo {mapF inF}) ⟩
-   HMap (homo-base α-homo) ∙ HMap (homo-base init-homo)
-   ≅⟨ sym fcomp ⟩
-   HMap (homo-base (comp-homo α-homo init-homo))
-   ≅⟨ cong HMap (homomorphismCong lemma) ⟩
-   HMap iden
-   ≅⟨ fid ⟩
-   iden {carrier (mapF inF)}
-   ≅⟨ refl ⟩
-   homo-base (iden-homo {mapF inF})
-   ∎)
+lemma : comp-homo α-homo init-homo ≅ iden-homo
+lemma = homomorphismEq (proof
+           α ∙ homo-base init-homo
+         ≅⟨ sym (cong homo-base (univ {f = comp-homo α-homo init-homo}) ) ⟩
+           homo-base init-homo
+         ≅⟨ cong homo-base (univ {f = iden-homo}) ⟩
+          iden
+         ∎)
 
 L : Iso F-AlgebraCat α-homo
 L = iso init-homo
         lemma
-        lemma2
+        (homomorphismEq (proof
+           homo-base init-homo ∙ α
+           ≅⟨ homo-prop init-homo  ⟩
+           HMap α ∙ HMap (homo-base init-homo)
+           ≅⟨ sym fcomp ⟩
+           HMap (α ∙ homo-base init-homo)
+           ≅⟨ cong HMap (cong homo-base lemma) ⟩
+           HMap iden
+           ≅⟨ fid ⟩
+           iden
+           ∎ ))
+
+
