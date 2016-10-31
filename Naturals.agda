@@ -54,6 +54,10 @@ compVNat {D = D}{F}{G}{H} α β = let open Cat D; open NatT in record {
     (cmp α ∙ cmp β) ∙ HMap F f 
     ∎}
 
+compVNat2 : ∀{a b c d}{C : Cat {a} {b}}{D : Cat {c} {d}}{F G1 G2 H : Fun C D} → 
+          NatT G1 H → NatT F G2 → G1 ≅ G2 → NatT F H
+compVNat2 α β refl = compVNat α β
+
 -- Natural isomorphism
 
 open import Categories.Iso

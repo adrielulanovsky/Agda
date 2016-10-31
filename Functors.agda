@@ -77,7 +77,14 @@ Fop (functor OMap HMap fid fcomp) = functor OMap HMap fid fcomp
 
 
 --------------------------------------------------
+○-idl : ∀{a b c d}{A : Cat {a} {b}}{B : Cat {c} {d}}{F : Fun A B} ->
+           IdF ○ F ≅ F
+○-idl = Functor-Eq refl refl
 
---○-assoc : ∀{a b c d e f g h}{A : Cat {a} {b}}{B : Cat {c} {d}}{C : Cat {e} {f}}{D : Cat {g} {h}}{F : Fun A B}{G : Fun B C}{H : Fun C D} ->
-       --    {!H ○ (G ○ F) ≅ (H ○ G) ○ F!}
---○-assoc = {!!}
+○-idr : ∀{a b c d}{A : Cat {a} {b}}{B : Cat {c} {d}}{F : Fun A B} ->
+           F ○ IdF ≅ F
+○-idr = Functor-Eq refl refl
+
+○-assoc : ∀{a b c d e f g h}{A : Cat {a} {b}}{B : Cat {c} {d}}{C : Cat {e} {f}}{D : Cat {g} {h}}{F : Fun A B}{G : Fun B C}{H : Fun C D} ->
+           H ○ (G ○ F) ≅ (H ○ G) ○ F
+○-assoc = Functor-Eq refl refl
