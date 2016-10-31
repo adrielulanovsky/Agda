@@ -74,3 +74,10 @@ Fop : ∀{a b c d}{C : Cat {a}{b}}{ D : Cat {c} {d}}
       → (F : Fun C D)
       → Fun (C Op) (D Op)
 Fop (functor OMap HMap fid fcomp) = functor OMap HMap fid fcomp
+
+
+--------------------------------------------------
+
+--○-assoc : ∀{a b c d e f g h}{A : Cat {a} {b}}{B : Cat {c} {d}}{C : Cat {e} {f}}{D : Cat {g} {h}}{F : Fun A B}{G : Fun B C}{H : Fun C D} ->
+       --    {!H ○ (G ○ F) ≅ (H ○ G) ○ F!}
+--○-assoc = {!!}
