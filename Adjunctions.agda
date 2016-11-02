@@ -48,6 +48,25 @@ record Adj2 {a b c d}(C : Cat {a}{b})(D : Cat {c}{d}) : Set (a ⊔ b ⊔ c ⊔ d
 
 -------------------------
 
+record Adj3 {a b c d}(C : Cat {a}{b})(D : Cat {c}{d}) : Set (a ⊔ b ⊔ c ⊔ d)
+  where
+  constructor adjunction3  
+  open Cat C renaming (Obj to ObjC ; Hom to HomC ; _∙_ to _∙C_ )
+  open Cat D renaming (Obj to ObjD ; Hom to HomD ; _∙_ to _∙D_ )
+  field L           : Fun C D
+        R           : Fun D C
+        eta         : {X : ObjC} → HomC X (OMap (R ○ L) X) 
+        epsilon     : {X : ObjD} → HomD (OMap (L ○ R) X) X
+        eta-nat     : {X Y : ObjC} {f : HomC X Y} →
+                      (HMap (R ○ L) f) ∙C eta ≅ eta ∙C f
+        eps-nat     : {X Y : ObjD} {f : HomD X Y} →
+                      f ∙D epsilon ≅ epsilon ∙D HMap (L ○ R) f 
+        triangle1   : {X : ObjD} → 
+                      HMap R epsilon ∙C eta {OMap R X} ≅ Cat.iden C {OMap R X}
+        triangle2   : {X : ObjC} → 
+                      epsilon {OMap L X} ∙D HMap L eta ≅ Cat.iden D {OMap L X}
+
+-------------------------
 module AdjIso {a}{b}{c}{d}(C : Cat {a}{b})(D : Cat {c}{d}) where
   open NatT
   open Cat C renaming (Obj to ObjC ; Hom to HomC ; _∙_ to _∙C_ ; iden to idC ; idr to idrC ; idl to idlC ; ass to assC ; congl to conglC ; congr to congrC ; conglr to conglrC )
@@ -119,7 +138,7 @@ module AdjIso {a}{b}{c}{d}(C : Cat {a}{b})(D : Cat {c}{d}) where
     right idC ∙D HMap (L ○ R) f
     ∎)
                                           )
-                                 (NatTEq2 ○-idl ○-idr (proof
+                                 (NatTEq2 ○-idl ○-idr ({!Adj2.η!} {-proof
    cmp
      (compVNat2
       (compFNat R
@@ -148,18 +167,87 @@ module AdjIso {a}{b}{c}{d}(C : Cat {a}{b})(D : Cat {c}{d}) where
    idC
    ≅⟨ refl ⟩
    cmp idNat
-   ∎))
+   ∎ -}))
                                  {!!}
 
   lemma2 : Adj2 C D -> Adj C D
   lemma2 (adjunction2 L R η ε triangle1 triangle2) =
-         adjunction L R {!NatT.cmp (compFNat R ε)!} {!!} {!!} {!!} {!!} {!!}
+         adjunction L 
+                    R 
+                    (λ f → HMap R f ∙C NatT.cmp η ) 
+                    (λ g → NatT.cmp ε ∙D HMap L g) 
+                    (λ f → proof
+   cmp ε ∙D HMap L (HMap R f ∙C cmp η)
+   ≅⟨ sym {!nat ε {f = ?}!} ⟩
+   {!NatT.nat η!}
+   ≅⟨ {!!} ⟩
+   {!!}
+   ≅⟨ {!!} ⟩
+   {!!}
+   ≅⟨ {!!} ⟩
+   {!!}
+   ≅⟨ {!!} ⟩
+   {!!}
+   ≅⟨ {!!} ⟩
+   {!!}
+   ≅⟨ {!!} ⟩
+   {!!}
+   ≅⟨ {!!} ⟩
+   {!!}
+   ≅⟨ {!!} ⟩
+   f
+   ∎) 
+                    {!NatT.cmp ε!} 
+                    {!!} 
+                    {!NatT.cmp (compNatF ε L)!}
+
+  
+{-
+  lemma3 : Adj2 C D → Adj3 C D
+  lemma3 (adjunction2 L R η ε triangle1 triangle2) = 
+         adjunction3 L 
+                     R 
+                     (NatT.cmp η) 
+                     (NatT.cmp ε) 
+                     (NatT.nat η) 
+                     (NatT.nat ε) 
+                     {!!} 
+                     {!!}
+
+  lemma4 : Adj3 C D → Adj2 C D
+  lemma4 (adjunction3 L R eta epsilon eta-nat eps-nat triangle1 triangle2) = 
+         adjunction2 L 
+                     R 
+                     (natural eta eta-nat) 
+                     (natural epsilon eps-nat) 
+                     (NatTEq2 ○-idl ○-idr (λ {X} -> proof
+   cmp
+     (compVNat2
+      (compFNat R
+       (natural epsilon eps-nat))
+      (compNatF (natural eta eta-nat) R)
+      ○-assoc)
+   ≅⟨ {!!} ⟩
+   HMap R epsilon ∙C eta
+   ≅⟨ triangle1 ⟩
+   idC
+   ≅⟨ refl ⟩
+   cmp idNat {C = C} 
+   ∎)) 
+                     (NatTEq2 ○-idr ○-idl {!triangle2!})
+-}
+
 -- probar que ir de Adj en Adj2 y luego de Adj2 en Adj hace que vuelva al mismo elemento (lemma2 (lemma x) = x, lemma (lemma2 x) = x)
 
 
 --Usar una compVNat más general, que no necesite que G sea igual
 
 {-
+compNatF ε L : {X : ObjC} → HomD (OMap ((L ○ R) ○ L) X) (OMap (IdF ○ L) X)
+compFNat R ε : HomC (OMap (R ○ (L ○ R)) X) (OMap R X)
+compNatF η R : {X : ObjD} → HomC (OMap (IdF ○ R) X) (OMap ((R ○ L) ○ R) X)
+compFNat L η : HomD (OMap L X) (OMap (L ○ (R ○ L)) X)
+
 proof
    ?
    ≅⟨ ? ⟩

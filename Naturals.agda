@@ -21,6 +21,12 @@ NatTEq p with iext (λ X → p {X})
 NatTEq {α = natural cmp _} {natural .cmp _} p | refl = 
         cong (natural cmp) (iext λ _ → iext λ _ → iext λ _ → ir _ _)
 
+NatTcmp : ∀{a b c d}{C : Cat {a} {b}}{D : Cat {c} {d}}{F G : Fun C D}
+        → {α β : NatT F G}
+        → α ≅ β
+        → (∀{X} → NatT.cmp α {X} ≅ NatT.cmp β {X})
+NatTcmp refl = refl
+
 
 idNat : ∀{a b c d}{C : Cat {a} {b}}{D : Cat {c} {d}}{F : Fun C D} → NatT F F
 idNat {D = D}{F} = let open Cat D in record {
