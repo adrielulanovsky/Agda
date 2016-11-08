@@ -134,6 +134,44 @@ cong₃ : ∀{a b c d}{A : Set a}{B : A → Set b}
         f a b c ≅ f a' b' c'
 cong₃ f refl refl refl = refl
 
+cong6 : ∀{a b c d e g h}{A : Set a}{B : A → Set b}
+        {C : ∀ x → B x → Set c }
+        {D : ∀ x y → C x y → Set d}
+        {E : ∀ x y z → D x y z → Set e}
+        {F : ∀ w x y z → E w x y z → Set g}
+        {G : ∀ v w x y z → F v w x y z → Set h}
+        (f : ∀ u v w x y z → G u v w x y z)
+        {a a' : A} → a ≅ a' → 
+        {b : B a}{b' : B a'} → b ≅ b' → 
+        {c : C a b}{c' : C a' b'} → c ≅ c' → 
+        {d : D a b c}{d' : D a' b' c'} → d ≅ d' → 
+        {e : E a b c d}{e' : E a' b' c' d'} → e ≅ e' → 
+        {g : F a b c d e}{g' : F a' b' c' d' e'} → g ≅ g' → 
+        f a b c d e g ≅ f a' b' c' d' e' g'
+cong6 f refl refl refl refl refl refl = refl
+
+cong8 : ∀{a b c d e g h i j}{A : Set a}{B : A → Set b}
+        {C : ∀ x → B x → Set c }
+        {D : ∀ x y → C x y → Set d}
+        {E : ∀ x y z → D x y z → Set e}
+        {F : ∀ w x y z → E w x y z → Set g}
+        {G : ∀ v w x y z → F v w x y z → Set h}
+        {H : ∀ u v w x y z → G u v w x y z → Set i}
+        {I : ∀ t u v w x y z → H t u v w x y z → Set j}
+        (f : ∀ s t u v w x y z → I s t u v w x y z)
+        {a a' : A} → a ≅ a' → 
+        {b : B a}{b' : B a'} → b ≅ b' → 
+        {c : C a b}{c' : C a' b'} → c ≅ c' → 
+        {d : D a b c}{d' : D a' b' c'} → d ≅ d' → 
+        {e : E a b c d}{e' : E a' b' c' d'} → e ≅ e' → 
+        {g : F a b c d e}{g' : F a' b' c' d' e'} → g ≅ g' → 
+        {h : G a b c d e g}{h' : G a' b' c' d' e' g'} → h ≅ h' → 
+        {i : H a b c d e g h}{i' : H a' b' c' d' e' g' h'} → i ≅ i' → 
+        f a b c d e g h i ≅ f a' b' c' d' e' g' h' i'
+cong8 f refl refl refl refl refl refl refl refl = refl
+
+
+
 ir : ∀ {ℓ} {A B : Set ℓ} {x : A} {y : B}
                     (p q : x ≅ y) → p ≅ q
 ir refl refl = refl

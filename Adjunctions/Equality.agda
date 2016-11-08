@@ -23,23 +23,12 @@ Adj-Eq-aux (adjunction L R left right lawa lawb natleft natright)
            (adjunction .L .R .left .right lawa₁ lawb₁ natleft₁ natright₁)
            refl refl l r | refl | refl = proof
    adjunction L R left right lawa lawb natleft natright
-   ≅⟨ cong {!(λ x -> adjunction L R left right ? lawb natleft natright)!} {!!} ⟩
-   {!!}
-   ≅⟨ {!!} ⟩
-   {!!}
-   ≅⟨ {!!} ⟩
-   {!!}
-   ≅⟨ {!!} ⟩
-   {!!}
-   ≅⟨ {!!} ⟩
-   {!!}
-   ≅⟨ {!!} ⟩
-   {!!}
-   ≅⟨ {!!} ⟩
-   {!!}
-   ≅⟨ {!!} ⟩
-   {!!}
-   ≅⟨ {!!} ⟩
+   ≅⟨ cong8 adjunction refl refl refl refl
+                       (iext (λ _ → iext (λ _ → ext (λ a → ir (lawa a) (lawa₁ a)))))
+                       (iext (λ _ → iext (λ _ → ext (λ a → ir (lawb a) (lawb₁ a)))))
+                       (iext (λ _ → iext (λ _ → iext (λ _ → iext (λ _ → ext (λ a → ext (λ b → ext (λ c → ir (natleft a b c) (natleft₁ a b c)))))))))
+                       ((iext (λ _ → iext (λ _ → iext (λ _ → iext (λ _ → ext (λ a → ext (λ b → ext (λ c → ir (natright a b c) (natright₁ a b c))))))))))
+                       ⟩
    adjunction L R left right lawa₁ lawb₁ natleft₁ natright₁
    ∎
 
@@ -64,3 +53,6 @@ Adj-Eq {C = C}{D}(adjunction L R left right lawa lawb natleft natright)
                              ≅⟨ lawa (right₁ f) ⟩
                                right₁ f
                               ∎))
+
+
+-----------------------------------------------------

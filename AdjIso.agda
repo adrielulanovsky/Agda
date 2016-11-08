@@ -176,20 +176,27 @@ module AdjIso {a}{b}{c}{d}(C : Cat {a}{b})(D : Cat {c}{d}) where
    g ∙D (ε ∙D HMap L h) ∙D HMap L f
    ∎)  
 
-  AdjEq : ∀{C D}{A B : Adj {a} {b} {c} {d} C D} → 
-          Adj.L A ≅ Adj.L B → 
-          Adj.R A ≅ Adj.R B → 
-          ((X : Cat.Obj C) (Y : Cat.Obj D) → 
-            Adj.left A {X}{Y} ≅ Adj.left B {X}{Y}) → 
-          ((X : Cat.Obj C) (Y : Cat.Obj D) → 
-            Adj.right A {X}{Y} ≅ Adj.right B {X}{Y}) →
-          A ≅ B
-  AdjEq = {!!}
-
   lemma3 : ∀{A} -> lemma2 (lemma1 A) ≅ A
-  lemma3 = {!!}
+  lemma3 {A} = let open Adj A
+               in Adj-Eq (lemma2 (lemma1 A)) A refl refl (ext (λ a → proof
+   HMap R a ∙C left idD
+   ≅⟨ sym idrC ⟩
+   (HMap R a ∙C left idD) ∙C idC
+   ≅⟨ assC ⟩
+   HMap R a ∙C left idD ∙C idC
+   ≅⟨ natleft idC a idD ⟩
+   left (a ∙D idD ∙D HMap L idC)
+   ≅⟨ cong left (congrD idlD) ⟩
+   left (a ∙D HMap L idC)
+   ≅⟨ cong left (congrD (fid L)) ⟩
+   left (a ∙D idD)
+   ≅⟨ cong left idrD ⟩
+   left a
+   ∎))
 
-
+  lemma4 : ∀{A} -> lemma1 (lemma2 A) ≅ A
+  lemma4 {A} = let open Adj3 A
+               in {!!}
 {-  lemma1 : Adj C D -> Adj2 C D
   lemma1 (adjunction L R left right lawa lawb natleft natright) =
                      adjunction2 L
