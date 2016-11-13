@@ -6,10 +6,10 @@ open import Functors
 
 open Fun
 
---Adj3 -> AdjUC
---adjunction3 -> adjunctionUC
-
 --Definición: Adjunciones Hom-Set
+---- Dos functores L y R
+---- Un isomorfismo natural left (con inversa right)
+
 record Adj {a b c d}(C : Cat {a}{b})(D : Cat {c}{d}) : Set (a ⊔ b ⊔ c ⊔ d)
   where
   constructor adjunction  
@@ -34,26 +34,19 @@ record Adj {a b c d}(C : Cat {a}{b})(D : Cat {c}{d}) : Set (a ⊔ b ⊔ c ⊔ d)
                    (h : HomC X (OMap R Y)) → 
                    right (HMap R g ∙C h ∙C f) ≅  g ∙D (right h ∙D HMap L f) 
 
---------------------------
-{-
-record Adj2 {a b c d}(C : Cat {a}{b})(D : Cat {c}{d}) : Set (a ⊔ b ⊔ c ⊔ d)
-  where
-  constructor adjunction2  
-  open Cat C renaming (Obj to ObjC ; Hom to HomC ; _∙_ to _∙C_ )
-  open Cat D renaming (Obj to ObjD ; Hom to HomD ; _∙_ to _∙D_ )
-  field L         : Fun C D
-        R         : Fun D C
-        η         : NatT IdF (R ○ L)
-        ε         : NatT (L ○ R) IdF 
-        triangle1 : compVNat2 (compFNat R ε) (compNatF η R) (○-assoc {F = R}{L}{R}) ≅ idNat {F = R}
-        triangle2 : compVNat2 (compNatF ε L) (compFNat L η) (sym (○-assoc {F = L}{R}{L})) ≅ idNat {F = L}
--}
-
 -------------------------
---Definición: Adjunción Unit-Counit
-record Adj3 {a b c d}(C : Cat {a}{b})(D : Cat {c}{d}) : Set (a ⊔ b ⊔ c ⊔ d)
+{- Definición: Adjunción Unit-Counit
+---- Dos functores L y R
+---- Dos transformaciones naturales:
+-------- η : IdF → R ○ L  (unit)
+-------- ε : L ○ R → IdF (counit)
+---- que cumplen:
+----------------- R ε ∘ η R ≅ idenC
+----------------- ε L ∘ L η ≅ idenD
+-}
+record AdjUC {a b c d}(C : Cat {a}{b})(D : Cat {c}{d}) : Set (a ⊔ b ⊔ c ⊔ d)
   where
-  constructor adjunction3  
+  constructor adjunctionUC  
   open Cat C renaming (Obj to ObjC ; Hom to HomC ; _∙_ to _∙C_ )
   open Cat D renaming (Obj to ObjD ; Hom to HomD ; _∙_ to _∙D_ )
   field L           : Fun C D
@@ -70,6 +63,21 @@ record Adj3 {a b c d}(C : Cat {a}{b})(D : Cat {c}{d}) : Set (a ⊔ b ⊔ c ⊔ d
                       ε {OMap L X} ∙D HMap L η ≅ Cat.iden D {OMap L X}
 
 -------------------------
+
+{-
+record Adj2 {a b c d}(C : Cat {a}{b})(D : Cat {c}{d}) : Set (a ⊔ b ⊔ c ⊔ d)
+  where
+  constructor adjunction2  
+  open Cat C renaming (Obj to ObjC ; Hom to HomC ; _∙_ to _∙C_ )
+  open Cat D renaming (Obj to ObjD ; Hom to HomD ; _∙_ to _∙D_ )
+  field L         : Fun C D
+        R         : Fun D C
+        η         : NatT IdF (R ○ L)
+        ε         : NatT (L ○ R) IdF 
+        triangle1 : compVNat2 (compFNat R ε) (compNatF η R) (○-assoc {F = R}{L}{R}) ≅ idNat {F = R}
+        triangle2 : compVNat2 (compNatF ε L) (compFNat L η) (sym (○-assoc {F = L}{R}{L})) ≅ idNat {F = L}
+-}
+
 
 {-
 compNatF ε L : {X : ObjC} → HomD (OMap ((L ○ R) ○ L) X) (OMap L X)

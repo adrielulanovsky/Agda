@@ -3,16 +3,7 @@ open import Categories
 open import Functors
 open import Adjunctions
 open import Adjunctions.Equality
-open import Adjunctions.Equality2
-
---lemma1 -> HomSet-UC
---lemma2 -> UC-HomSet
---lemma3 -> lemma1
---lemma4 -> lemma2
-
---adjunction3 -> adjunctionUC
--- Adjunctions.Equality2 -> Adjunctions.EqualityUC
---Adj3 -> AdjUC
+open import Adjunctions.EqualityUC
 
 module AdjIso {a}{b}{c}{d}(C : Cat {a}{b})(D : Cat {c}{d}) where
   open Fun
@@ -20,10 +11,13 @@ module AdjIso {a}{b}{c}{d}(C : Cat {a}{b})(D : Cat {c}{d}) where
   open Cat D renaming (Obj to ObjD ; Hom to HomD ; _∙_ to _∙D_ ; iden to idD ; idr to idrD ; idl to idlD ; ass to assD ; congl to conglD ; congr to congrD ; conglr to conglrD)
 
 --Función que dada una adjunción Hom-Set, me devuelve una adjunción Unit-Counit
-  lemma1 : Adj C D -> Adj3 C D
-  lemma1 (adjunction L R left right lawa lawb natleft natright) = 
-         adjunction3 L 
-                     R 
+-- η ≅ left idD
+-- ε ≅ right idC
+
+  HomSet-UC : Adj C D -> AdjUC C D
+  HomSet-UC (adjunction L R left right lawa lawb natleft natright) = 
+         adjunctionUC L 
+                      R 
                      (left idD) 
                      (right idC) 
                      (λ {X}{Y}{f} ->
@@ -116,8 +110,11 @@ module AdjIso {a}{b}{c}{d}(C : Cat {a}{b})(D : Cat {c}{d}) where
    ∎)
 
 --Función que dada una adjunción Unit-Counit, me devuelve una adjunción Hom-Set
-  lemma2 : Adj3 C D -> Adj C D
-  lemma2 (adjunction3 L R η ε η-nat ε-nat triangle1 triangle2) = 
+-- left f ≅ HMap R f ∙C η
+-- right g ≅ ε ∙D HMap L g
+
+  UC-HomSet : AdjUC C D -> Adj C D
+  UC-HomSet (adjunctionUC L R η ε η-nat ε-nat triangle1 triangle2) = 
          adjunction L 
                     R 
                     (λ f → HMap R f ∙C η) 
@@ -186,9 +183,9 @@ module AdjIso {a}{b}{c}{d}(C : Cat {a}{b})(D : Cat {c}{d}) where
    ∎)  
 
 --Ir de Hom-Set en Unit-Counit y volver me devuelve la misma adjunción
-  lemma3 : ∀{A} → lemma2 (lemma1 A) ≅ A
-  lemma3 {A} = let open Adj A
-               in Adj-Eq (lemma2 (lemma1 A)) A refl refl (ext (λ a → proof
+  adjIso1 : ∀{A} → UC-HomSet (HomSet-UC A) ≅ A
+  adjIso1 {A} = let open Adj A
+               in Adj-Eq (UC-HomSet (HomSet-UC A)) A refl refl (ext (λ a → proof
    HMap R a ∙C left idD
    ≅⟨ sym idrC ⟩
    (HMap R a ∙C left idD) ∙C idC
@@ -205,9 +202,9 @@ module AdjIso {a}{b}{c}{d}(C : Cat {a}{b})(D : Cat {c}{d}) where
    ∎))
 
 --Ir de Unit-Counit en Hom-Set y volver me devuelve la misma adjunción
-  lemma4 : ∀{A} -> lemma1 (lemma2 A) ≅ A
-  lemma4 {A} = let open Adj3 A
-               in Adj3-Eq (lemma1 (lemma2 A)) A refl refl 
+  adjIso2 : ∀{A} -> HomSet-UC (UC-HomSet A) ≅ A
+  adjIso2 {A} = let open AdjUC A
+               in AdjUC-Eq (HomSet-UC (UC-HomSet A)) A refl refl 
                   (proof
    HMap R idD ∙C η
    ≅⟨ conglC (fid R) ⟩
