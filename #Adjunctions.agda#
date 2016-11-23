@@ -81,8 +81,8 @@ record Adj2 {a b c d}(C : Cat {a}{b})(D : Cat {c}{d}) : Set (a ⊔ b ⊔ c ⊔ d
 
 {-
 compNatF ε L : {X : ObjC} → HomD (OMap ((L ○ R) ○ L) X) (OMap L X)
-compFNat R ε : HomC (OMap (R ○ (L ○ R)) X) (OMap R X)
-compNatF η R : {X : ObjD} → HomC (OMap R X) (OMap ((R ○ L) ○ R) X)
+compFNat R ε : HomC (OMap (R ○ (L ○ R)) Y) (OMap R Y)
+compNatF η R : {Y : ObjD} → HomC (OMap R Y) (OMap ((R ○ L) ○ R) Y)
 compFNat L η : HomD (OMap L X) (OMap (L ○ (R ○ L)) X)
 
 -}
